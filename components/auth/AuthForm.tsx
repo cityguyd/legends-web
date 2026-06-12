@@ -10,13 +10,13 @@ interface AuthFormProps {
   mode: AuthMode;
 }
 
-const SAFE_NEXT = /^\/(?!\/)/;
+const SAFE_NEXT = /^\/(?![/\\])/;
 
 function getNextParam(): string {
   if (typeof window === "undefined") return "/dashboard";
   const params = new URLSearchParams(window.location.search);
   const raw = params.get("next") ?? "";
-  return SAFE_NEXT.test(raw) ? raw : "/dashboard";
+  return SAFE_NEXT.test(raw) && !raw.includes("\\") ? raw : "/dashboard";
 }
 
 export function AuthForm({ mode }: AuthFormProps) {
