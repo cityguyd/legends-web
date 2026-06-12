@@ -2,7 +2,8 @@ import Link from "next/link";
 import { FigureCard } from "@/components/marketing/FigureCard";
 import { getFigures, type Figure } from "@/lib/marketing/data";
 
-export const revalidate = 3600;
+// Page is dynamic (reads searchParams for filtering) so route-level revalidate
+// is inert. Data caching is handled in getFigures via unstable_cache.
 
 export const metadata = {
   title: "Figures — Legends Library",
@@ -164,6 +165,7 @@ export default async function FiguresPage({
                     categories: figure.category,
                     wave: figure.wave,
                     portraitUrl: figure.portrait_url,
+                    shortName: (figure as unknown as Record<string, unknown>).short_name as string | undefined,
                   }}
                 />
               </li>

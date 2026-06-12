@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { isLive } from "@/lib/marketing/data";
 
 export interface FigureCardFigure {
   slug: string;
@@ -28,7 +29,7 @@ export function shortName(figure: Pick<FigureCardFigure, "name" | "shortName">):
 }
 
 export function FigureCard({ figure }: { figure: FigureCardFigure }) {
-  const live = figure.wave === 1;
+  const live = isLive(figure);
 
   return (
     <article className="relative flex flex-col rounded-xl border border-border bg-surface p-5 text-center shadow-sm">

@@ -22,7 +22,7 @@ export function MobileMenu({
         {open ? "✕" : "☰"}
       </button>
       {open && (
-        <nav className="absolute inset-x-0 top-full z-50 border-b border-border bg-surface px-6 py-4 shadow-md">
+        <nav aria-label="Main" className="absolute inset-x-0 top-full z-50 border-b border-border bg-surface px-6 py-4 shadow-md">
           <ul className="flex flex-col gap-3">
             {links.map((link) => (
               <li key={link.href}>

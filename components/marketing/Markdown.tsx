@@ -21,11 +21,42 @@ function renderInline(text: string): ReactNode[] {
   });
 }
 
+/**
+ * Split a raw block into sub-blocks when a heading line (#/##/###) is NOT
+ * separated from the following text by a blank line. For example:
+ *   "## My Heading\nsome paragraph text"
+ * becomes two blocks: "## My Heading" and "some paragraph text".
+ */
+function splitHeadingFromText(block: string): string[] {
+  const lines = block.split(/\r?\n/);
+  const result: string[] = [];
+  let current: string[] = [];
+  for (const line of lines) {
+    if (/^#{1,3}\s+/.test(line) && current.length > 0) {
+      result.push(current.join("\n"));
+      current = [line];
+    } else if (/^#{1,3}\s+/.test(line) && current.length === 0) {
+      current = [line];
+    } else if (current.length > 0 && /^#{1,3}\s+/.test(current[current.length - 1]) && !/^#{1,3}\s+/.test(line)) {
+      result.push(current.join("\n"));
+      current = [line];
+    } else {
+      current.push(line);
+    }
+  }
+  if (current.length > 0) result.push(current.join("\n"));
+  return result;
+}
+
 export function Markdown({ source }: { source: string }) {
-  const blocks = source
+  const rawBlocks = source
     .split(/\r?\n\r?\n/)
     .map((b) => b.trim())
     .filter(Boolean);
+
+  // Expand any block that starts with a heading line but has no blank-line
+  // separator before the following text.
+  const blocks = rawBlocks.flatMap(splitHeadingFromText);
 
   return (
     <>
