@@ -9,6 +9,7 @@ import { ResponseCard } from "./ResponseCard";
 import { CopyToast } from "./CopyToast";
 import { StatusNotice } from "./StatusNotice";
 import { LimitModal } from "./LimitModal";
+import { SaveConversationButton } from "./SaveConversationButton";
 
 const FREE_DAILY_SIGNED_IN = 6;
 const FREE_DAILY_ANON = 3;
@@ -128,6 +129,14 @@ export function ChatThread({
                   onCopied={() => setToastVisible(true)}
                 />
               )
+            )}
+
+            {/* Save affordance — signed-in users with a settled thread */}
+            {isSignedIn && messages.length > 0 && !busy && (
+              <SaveConversationButton
+                figureSlug={figure.slug}
+                messages={messages}
+              />
             )}
 
             {status === "consulting" && <ConsultingIndicator />}

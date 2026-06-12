@@ -2,11 +2,12 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import type { SidebarConversation } from "@/lib/chat/conversations";
+import {
+  FREE_SAVE_CAP,
+  type SidebarConversation,
+} from "@/lib/conversations/shared";
 
 export type { SidebarConversation };
-
-const FREE_SAVE_CAP = 5;
 
 function PanelContent({
   conversations,

@@ -1,7 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { ChatThread } from "@/components/chat/ChatThread";
 import { Sidebar } from "@/components/chat/Sidebar";
-import { listConversationSummaries } from "@/lib/chat/conversations";
+import { listConversations } from "@/lib/actions/conversations";
 import { getFigureBySlug, isLive } from "@/lib/marketing/data";
 import { createClient } from "@/lib/supabase/server";
 
@@ -34,7 +34,7 @@ export default async function ChatPage({ params, searchParams }: Props) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const conversations = user ? await listConversationSummaries(supabase) : [];
+  const conversations = user ? await listConversations(20) : [];
 
   // ?q= prefills the composer (dashboard links here in Task 15); never auto-sent.
   const initialQuestion =
