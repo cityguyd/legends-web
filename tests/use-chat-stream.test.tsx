@@ -247,6 +247,49 @@ describe("useChatStream", () => {
     expect(msgs[msgs.length - 1].text).toBe("Retry response");
   });
 
+  test("(g) figureSlug change mid-stream → status idle, messages cleared", async () => {
+    // Use a never-resolving fetch so the stream hangs in "consulting" / "typing"
+    // long enough to rerender with a different slug.
+    let rejectFetch!: (reason: unknown) => void;
+    const hangingFetch = new Promise<Response>((_resolve, reject) => {
+      rejectFetch = reject;
+    });
+    vi.stubGlobal("fetch", vi.fn().mockReturnValue(hangingFetch));
+
+    const { result, rerender } = renderHook(
+      (props: { figureSlug: string; figureName: string }) =>
+        useChatStream(props),
+      { initialProps: DEFAULT_OPTS }
+    );
+
+    // Start a stream
+    act(() => {
+      result.current.send("What did you stand for?");
+    });
+
+    // Should move to consulting right away
+    await vi.waitFor(() => {
+      expect(result.current.status).toBe("consulting");
+    });
+
+    // Confirm user message is present
+    expect(result.current.messages).toHaveLength(1);
+
+    // Change the figure slug — simulates navigating to a different figure
+    act(() => {
+      rerender({ figureSlug: "einstein", figureName: "Albert Einstein" });
+    });
+
+    // Reject the hanging fetch so there are no unhandled-promise warnings
+    rejectFetch(new DOMException("aborted", "AbortError"));
+
+    // After slug change: status must be "idle" and messages must be empty
+    await vi.waitFor(() => {
+      expect(result.current.status).toBe("idle");
+    });
+    expect(result.current.messages).toHaveLength(0);
+  });
+
   test("(f) retry() after success is a no-op (fetch not called again)", async () => {
     const fetchSpy = vi
       .fn()

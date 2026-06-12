@@ -110,6 +110,10 @@ export function useChatStream({
         rafRef.current = null;
       }
       streaming.current = false;
+      // Reset status and clear messages so a slug change mid-stream doesn't
+      // leave "typing" stuck and carries a fresh thread to the next figure.
+      setStatus("idle");
+      setMessages([]);
     };
   }, [figureSlug]);
 
@@ -206,6 +210,11 @@ export function useChatStream({
       setMessages((prev) => [...prev, { role: "user", text: question }]);
       setStatus("consulting");
 
+      // Create the AbortController BEFORE any await so a concurrent slug
+      // change can cancel this stream even during the auth round-trip.
+      const controller = new AbortController();
+      abortRef.current = controller;
+
       // Resolve JWT for authenticated users (anonymous → no header)
       let jwt: string | null = null;
       try {
@@ -218,10 +227,14 @@ export function useChatStream({
         // Auth failure is non-fatal; proceed anonymously
       }
 
-      const sessionId = getSessionId();
+      // If the slug changed while we were awaiting the session, bail out.
+      if (controller.signal.aborted) {
+        streaming.current = false;
+        setStatus("idle");
+        return;
+      }
 
-      const controller = new AbortController();
-      abortRef.current = controller;
+      const sessionId = getSessionId();
 
       let res: Response;
       try {
