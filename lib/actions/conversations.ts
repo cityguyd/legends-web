@@ -89,6 +89,37 @@ function parseSummaryRow(row: unknown): ConversationSummary | null {
 export async function saveConversation(
   input: SaveConversationInput
 ): Promise<SaveConversationResult> {
+  // ── Input validation (dependency-free) ──────────────────────────────────────
+  const title =
+    input.title == null ? "" : String(input.title).slice(0, 500);
+  const figureSlug = typeof input.figureSlug === "string" ? input.figureSlug : "";
+  if (figureSlug.length === 0 || figureSlug.length > 100) {
+    return { ok: false, reason: "invalid-input" };
+  }
+  const messages = Array.isArray(input.messages) ? input.messages : null;
+  if (!messages || messages.length > 200) {
+    return { ok: false, reason: "invalid-input" };
+  }
+  for (const m of messages) {
+    if (m.role !== "user" && m.role !== "figure") {
+      return { ok: false, reason: "invalid-input" };
+    }
+    if (typeof m.text !== "string" || m.text.length > 20000) {
+      return { ok: false, reason: "invalid-input" };
+    }
+    if (m.citations !== undefined) {
+      try {
+        if (JSON.stringify(m.citations).length > 10000) {
+          return { ok: false, reason: "invalid-input" };
+        }
+      } catch {
+        return { ok: false, reason: "invalid-input" };
+      }
+    }
+  }
+  // Rebuild a clean input object with the coerced values.
+  const cleanInput: SaveConversationInput = { ...input, title, figureSlug };
+
   const supabase = await createClient();
   const {
     data: { user },
@@ -103,6 +134,8 @@ export async function saveConversation(
       .select("id", { count: "exact", head: true })
       .eq("user_id", user.id);
     if (countError) return { ok: false, reason: "error" };
+    // Note: count is checked before insert; a concurrent save could overshoot by
+    // one (bounded race, acceptable — no hard invariant broken).
     if ((count ?? 0) >= FREE_SAVE_CAP) return { ok: false, reason: "save-cap" };
   }
 
@@ -110,23 +143,23 @@ export async function saveConversation(
   const { data: figure } = await supabase
     .from("figures")
     .select("id")
-    .eq("slug", input.figureSlug)
+    .eq("slug", cleanInput.figureSlug)
     .maybeSingle();
   const figureId = typeof figure?.id === "string" ? figure.id : null;
 
-  const title = deriveTitle(input);
+  const derivedTitle = deriveTitle(cleanInput);
 
   const { data: conversation, error: insertError } = await supabase
     .from("conversations")
-    .insert({ user_id: user.id, figure_id: figureId, title })
+    .insert({ user_id: user.id, figure_id: figureId, title: derivedTitle })
     .select()
     .single();
   if (insertError || typeof conversation?.id !== "string") {
     return { ok: false, reason: "error" };
   }
 
-  if (input.messages.length > 0) {
-    const rows = input.messages.map((m) => ({
+  if (cleanInput.messages.length > 0) {
+    const rows = cleanInput.messages.map((m) => ({
       conversation_id: conversation.id,
       role: m.role,
       text: m.text,
@@ -144,7 +177,7 @@ export async function saveConversation(
   }
 
   safeRevalidate("/dashboard", "/conversations");
-  return { ok: true, id: conversation.id, title };
+  return { ok: true, id: conversation.id, title: derivedTitle };
 }
 
 export async function listConversations(
@@ -169,27 +202,42 @@ export async function deleteConversation(id: string): Promise<void> {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return;
-  // RLS restricts the delete to the owner's rows.
-  await supabase.from("conversations").delete().eq("id", id);
+  // RLS restricts the delete to the owner's rows; explicit eq is defense-in-depth.
+  const { error } = await supabase
+    .from("conversations")
+    .delete()
+    .eq("id", id)
+    .eq("user_id", user.id);
+  if (error) {
+    // TODO: surface delete errors in UI (returning a result would break the form-action void signature)
+    console.error("deleteConversation failed", error);
+    return;
+  }
   safeRevalidate("/dashboard", "/conversations");
 }
 
 /**
  * Full export of the user's saved conversations (all tiers).
- * Returns null when unauthenticated so the route handler can 401.
+ * Returns { kind: "unauthenticated" } when not signed in (→ 401),
+ * { kind: "error" } on a query failure (→ 500),
+ * or { kind: "ok", data } otherwise (empty array when none saved).
  */
-export async function exportConversations(): Promise<unknown[] | null> {
+export async function exportConversations(): Promise<
+  | { kind: "unauthenticated" }
+  | { kind: "error" }
+  | { kind: "ok"; data: unknown[] }
+> {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return null;
+  if (!user) return { kind: "unauthenticated" };
   const { data, error } = await supabase
     .from("conversations")
     .select(
       "id, title, created_at, figures(slug, name), messages(role, text, citations, confidence, created_at)"
     )
     .order("created_at", { ascending: false });
-  if (error) return [];
-  return data ?? [];
+  if (error) return { kind: "error" };
+  return { kind: "ok", data: data ?? [] };
 }

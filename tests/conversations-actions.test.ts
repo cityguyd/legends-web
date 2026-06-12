@@ -12,11 +12,14 @@ interface MockOptions {
   user?: { id: string } | null;
   /** uuid resolved from the figure slug; null → slug lookup misses. */
   figureId?: string | null;
+  /** When true, the messages insert returns an error to test the rollback path. */
+  messagesInsertFails?: boolean;
 }
 
 interface RecordedInserts {
   conversations: unknown[];
   messages: unknown[];
+  deletes: string[];
 }
 
 function makeBuilder(
@@ -28,6 +31,7 @@ function makeBuilder(
     op: "select" as "select" | "insert" | "delete",
     head: false,
     insertPayload: null as unknown,
+    eqPairs: [] as Array<[string, unknown]>,
   };
 
   function resolve(): Promise<unknown> {
@@ -47,12 +51,26 @@ function makeBuilder(
           error: null,
         });
       }
+      if (state.op === "delete") {
+        // Record the id being deleted (first eq value).
+        const idPair = state.eqPairs.find(([col]) => col === "id");
+        if (idPair) inserts.deletes.push(idPair[1] as string);
+        return Promise.resolve({ data: null, error: null });
+      }
       if (state.head) {
         return Promise.resolve({ count: opts.savedCount, error: null });
       }
       return Promise.resolve({ data: [], error: null });
     }
-    // messages insert / anything else
+    // messages table
+    if (table === "messages" && state.op === "insert") {
+      if (opts.messagesInsertFails) {
+        return Promise.resolve({
+          data: null,
+          error: { message: "messages insert failed" },
+        });
+      }
+    }
     return Promise.resolve({ data: null, error: null });
   }
 
@@ -73,7 +91,10 @@ function makeBuilder(
       state.op = "delete";
       return builder;
     },
-    eq: () => builder,
+    eq(col: string, val: unknown) {
+      state.eqPairs.push([col, val]);
+      return builder;
+    },
     order: () => builder,
     limit: () => builder,
     single: () => resolve(),
@@ -92,9 +113,10 @@ function mockSupabase(options: MockOptions): RecordedInserts {
   const opts: Required<MockOptions> = {
     user: { id: "user-1" },
     figureId: "fig-1",
+    messagesInsertFails: false,
     ...options,
   };
-  const inserts: RecordedInserts = { conversations: [], messages: [] };
+  const inserts: RecordedInserts = { conversations: [], messages: [], deletes: [] };
   const client = {
     auth: {
       getUser: async () => ({ data: { user: opts.user }, error: null }),
@@ -207,4 +229,34 @@ test("figure slug lookup miss still saves with null figure_id", async () => {
   expect(res.ok).toBe(true);
   const row = inserts.conversations[0] as Record<string, unknown>;
   expect(row).toMatchObject({ figure_id: null });
+});
+
+test("messages insert failure rolls back the conversation shell", async () => {
+  const inserts = mockSupabase({
+    tier: "free",
+    savedCount: 0,
+    messagesInsertFails: true,
+  });
+  const res = await saveConversation({
+    figureSlug: "martin-luther-king",
+    title: "t",
+    messages: [{ role: "user", text: "test question" }],
+  });
+  expect(res).toEqual({ ok: false, reason: "error" });
+  // The rollback delete must have targeted the just-created conversation shell.
+  expect(inserts.deletes).toContain("conv-1");
+});
+
+test("201 messages is rejected with invalid-input", async () => {
+  mockSupabase({ tier: "free", savedCount: 0 });
+  const tooMany = Array.from({ length: 201 }, (_, i) => ({
+    role: (i % 2 === 0 ? "user" : "figure") as "user" | "figure",
+    text: "msg",
+  }));
+  const res = await saveConversation({
+    figureSlug: "martin-luther-king",
+    title: "t",
+    messages: tooMany,
+  });
+  expect(res).toEqual({ ok: false, reason: "invalid-input" });
 });

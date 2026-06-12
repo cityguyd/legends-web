@@ -28,6 +28,7 @@ export interface SaveConversationInput {
 
 export type SaveConversationFailReason =
   | "unauthenticated"
+  | "invalid-input"
   | "save-cap"
   | "error";
 

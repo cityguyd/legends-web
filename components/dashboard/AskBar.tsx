@@ -55,6 +55,7 @@ export function AskBar({ figures }: { figures: AskBarFigure[] }) {
         onChange={(event) => setQuestion(event.target.value)}
         placeholder="Ask any question…"
         aria-label="Your question"
+        maxLength={300}
         className="min-w-0 flex-1 rounded-full border border-border bg-bg px-4 py-2.5 text-sm text-ink placeholder:text-sub/70 focus:outline-none focus:ring-2 focus:ring-gold/50"
       />
       <button

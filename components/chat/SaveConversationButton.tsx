@@ -22,11 +22,13 @@ export function SaveConversationButton({
   const [savedLength, setSavedLength] = useState<number | null>(null);
   const [capOpen, setCapOpen] = useState(false);
   const [failed, setFailed] = useState(false);
+  const [sessionExpired, setSessionExpired] = useState(false);
 
   const saved = savedLength === messages.length;
 
   function handleSave() {
     setFailed(false);
+    setSessionExpired(false);
     startTransition(async () => {
       const result = await saveConversation({
         figureSlug,
@@ -42,6 +44,8 @@ export function SaveConversationButton({
         setSavedLength(messages.length);
       } else if (result.reason === "save-cap") {
         setCapOpen(true);
+      } else if (result.reason === "unauthenticated") {
+        setSessionExpired(true);
       } else {
         setFailed(true);
       }
@@ -51,6 +55,11 @@ export function SaveConversationButton({
   return (
     <>
       <div className="flex items-center gap-2 self-end">
+        {sessionExpired && (
+          <span className="text-xs text-sub">
+            Session expired — please log in again
+          </span>
+        )}
         {failed && (
           <span className="text-xs text-sub">Couldn’t save — try again</span>
         )}
