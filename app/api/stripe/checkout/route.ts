@@ -14,16 +14,47 @@ async function startCheckout(): Promise<never> {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login?next=/pricing");
 
+  // Guard: already Pro — no need to open a second checkout.
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("tier, stripe_customer_id")
+    .eq("id", user.id)
+    .maybeSingle();
+  if (profile?.tier === "pro") redirect("/account");
+
+  // Guard: STRIPE_PRICE_ID must be set; missing means a deployment config gap.
+  const priceId = process.env.STRIPE_PRICE_ID;
+  if (!priceId) {
+    console.error(
+      "stripe checkout: STRIPE_PRICE_ID is not set — cannot start checkout"
+    );
+    redirect("/pricing?checkout=error");
+  }
+
   const siteUrl = getSiteUrl();
   let checkoutUrl: string | null = null;
   try {
-    const session = await getStripe().checkout.sessions.create({
+    const sessionParams: Parameters<
+      ReturnType<typeof getStripe>["checkout"]["sessions"]["create"]
+    >[0] = {
       mode: "subscription",
-      line_items: [{ price: process.env.STRIPE_PRICE_ID!, quantity: 1 }],
+      line_items: [{ price: priceId, quantity: 1 }],
       client_reference_id: user.id,
       success_url: `${siteUrl}/dashboard?upgraded=1`,
       cancel_url: `${siteUrl}/pricing`,
-    });
+    };
+
+    // Reuse existing Stripe customer when we already have one, so payment
+    // methods and billing history are unified under a single customer object.
+    const existingCustomerId =
+      typeof profile?.stripe_customer_id === "string"
+        ? profile.stripe_customer_id
+        : null;
+    if (existingCustomerId) {
+      sessionParams.customer = existingCustomerId;
+    }
+
+    const session = await getStripe().checkout.sessions.create(sessionParams);
     checkoutUrl = session.url;
   } catch (error) {
     console.error("stripe checkout session creation failed", error);

@@ -2,6 +2,7 @@ import {
   handleStripeEvent,
   type ServiceDb,
   type StripeEventLike,
+  type ProfileRef,
 } from "@/lib/stripe/handleEvent";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -20,8 +21,13 @@ interface MockOptions {
   existingEventIds?: string[];
   /** [data_object_id, event_type] pairs already processed (object-level dedup). */
   existingObjects?: Array<[string, string]>;
-  /** stripe_customer_id → profile id lookups. */
-  profileByCustomer?: Record<string, string>;
+  /**
+   * stripe_customer_id → { id, subscriptionId } lookups.
+   * Default matching subscriptionId is "sub_1" so existing specs stay green.
+   */
+  profileByCustomer?: Record<string, ProfileRef>;
+  /** When true, updateProfile throws to test the write-before-audit path. */
+  updateProfileThrows?: boolean;
 }
 
 interface RecordedUpdate {
@@ -60,9 +66,12 @@ function mockServiceDb(opts: MockOptions = {}) {
       return true;
     },
     async updateProfile(id, patch) {
+      if (opts.updateProfileThrows) {
+        throw new Error("simulated profile write failure");
+      }
       updates.push({ table: "profiles", id, patch });
     },
-    async profileIdByCustomer(customerId) {
+    async profileByCustomer(customerId) {
       return opts.profileByCustomer?.[customerId] ?? null;
     },
   };
@@ -114,8 +123,10 @@ test("duplicate data_object_id+type with different event id is a no-op", async (
   expect(db.updates).toHaveLength(0);
 });
 
-test("customer.subscription.deleted reverts tier to free", async () => {
-  const db = mockServiceDb({ profileByCustomer: { cus_1: "user-1" } });
+test("customer.subscription.deleted reverts tier to free when sub ids match", async () => {
+  const db = mockServiceDb({
+    profileByCustomer: { cus_1: { id: "user-1", subscriptionId: "sub_1" } },
+  });
   await handleStripeEvent(
     evt("evt_3", "customer.subscription.deleted", {
       id: "sub_1",
@@ -173,4 +184,60 @@ test("duplicate event id skips the audit insert too", async () => {
     db
   );
   expect(db.inserts.stripe_events).toHaveLength(0);
+});
+
+// ── Write-before-audit (fix 1) ────────────────────────────────────────────────
+
+test("updateProfile throws → insertEvent NOT called (event not recorded → retryable)", async () => {
+  const db = mockServiceDb({ updateProfileThrows: true });
+  await expect(
+    handleStripeEvent(
+      evt("evt_throw", "checkout.session.completed", {
+        id: "cs_throw",
+        customer: "cus_1",
+        subscription: "sub_1",
+        client_reference_id: "user-throw",
+      }),
+      db
+    )
+  ).rejects.toThrow("simulated profile write failure");
+  // Audit row must NOT have been inserted — Stripe retries will reprocess fully.
+  expect(db.inserts.stripe_events).toHaveLength(0);
+});
+
+// ── Out-of-order subscription.deleted guard (fix 5) ──────────────────────────
+
+test("subscription.deleted: stored sub mismatch → no profile update, event recorded", async () => {
+  // Stored sub is "sub_2", event says "sub_1" → stale/out-of-order event.
+  const db = mockServiceDb({
+    profileByCustomer: { cus_1: { id: "user-1", subscriptionId: "sub_2" } },
+  });
+  await handleStripeEvent(
+    evt("evt_mismatch", "customer.subscription.deleted", {
+      id: "sub_1",
+      customer: "cus_1",
+    }),
+    db
+  );
+  // Audit row IS recorded (event happened, we just skip the demotion).
+  expect(db.inserts.stripe_events).toHaveLength(1);
+  // Profile must NOT have been updated.
+  expect(db.updates).toHaveLength(0);
+});
+
+// ── hasObject guard: id-less events don't dedup each other (fix 6 minor) ──────
+
+test("id-less events with same type are NOT deduped against each other by object", async () => {
+  // First event with empty/missing id
+  const db = mockServiceDb({
+    existingObjects: [["", "invoice.upcoming"]],
+  });
+  // A second event with the same empty objectId must NOT be skipped by hasObject.
+  // (hasObject is only called when objectId is non-empty.)
+  await handleStripeEvent(
+    evt("evt_idless", "invoice.upcoming", { customer: "cus_1" }), // no id field
+    db
+  );
+  // The event should be inserted (not skipped by the object-level dedup).
+  expect(db.inserts.stripe_events).toHaveLength(1);
 });

@@ -39,7 +39,7 @@ export function DeleteAccountButton() {
 
   return (
     <div
-      role="alertdialog"
+      role="region"
       aria-labelledby="delete-account-heading"
       className="rounded-xl border border-red-300 bg-card p-4"
     >
@@ -50,9 +50,8 @@ export function DeleteAccountButton() {
         Delete your account permanently?
       </p>
       <p className="mt-1 text-xs leading-relaxed text-sub">
-        This removes your profile and all saved conversations. It cannot be
-        undone. Active subscriptions should be cancelled first via Manage
-        Subscription.
+        This removes your profile and all saved conversations. Any active
+        subscription will be cancelled automatically. It cannot be undone.
       </p>
       {failed && (
         <p className="mt-2 text-xs font-medium text-red-600">

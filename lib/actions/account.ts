@@ -12,6 +12,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
+import { getStripe } from "@/lib/stripe/client";
 
 /**
  * Escape hatch after checkout: webhooks can lag a page load, so this simply
@@ -28,9 +29,42 @@ export async function deleteAccount(): Promise<void> {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login?next=/account");
 
+  const service = createServiceClient();
+
+  // Cancel any active Stripe subscription before removing the user.
+  // Account deletion must never be blocked by Stripe hiccups — errors are
+  // tolerated (already-cancelled / not-found are silent; others are logged).
+  const { data: profile } = await service
+    .from("profiles")
+    .select("stripe_subscription_id")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  const subscriptionId =
+    typeof profile?.stripe_subscription_id === "string"
+      ? profile.stripe_subscription_id
+      : null;
+
+  if (subscriptionId) {
+    try {
+      await getStripe().subscriptions.cancel(subscriptionId);
+    } catch (err: unknown) {
+      // Tolerate already-cancelled or not-found errors silently.
+      const isGone =
+        err instanceof Error &&
+        (err.message.includes("No such subscription") ||
+          err.message.includes("already been canceled"));
+      if (!isGone) {
+        console.error(
+          `deleteAccount: Stripe subscription cancel failed for ${subscriptionId} — proceeding with deletion`,
+          err
+        );
+      }
+    }
+  }
+
   // Service role deletes the auth user; the profiles row (and conversations
   // via user_id) cascade from auth.users.
-  const service = createServiceClient();
   const { error } = await service.auth.admin.deleteUser(user.id);
   if (error) {
     console.error("deleteAccount failed", error);

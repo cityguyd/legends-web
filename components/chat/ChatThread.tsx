@@ -41,8 +41,12 @@ export function ChatThread({
 
   // Derived LimitModal state — open whenever status is "limited" and the user
   // hasn't dismissed that specific status object yet.
+  // Pro users who hit a 429 (fair-use rate limit) should NOT see the free-daily
+  // upsell modal — they already pay. Show an inline notice instead (handled by
+  // the StatusNotice branch below).
   const [dismissed, setDismissed] = useState<unknown>(null);
   const limitOpen =
+    !isPro &&
     typeof status === "object" &&
     status.kind === "limited" &&
     status !== dismissed;
@@ -146,7 +150,20 @@ export function ChatThread({
             )}
 
             {status === "consulting" && <ConsultingIndicator />}
-            {/* limited status opens LimitModal; StatusNotice handles error/blocked only */}
+            {/* Pro users who hit a fair-use 429 see a neutral inline notice,
+                not the free-daily upsell modal. */}
+            {isPro &&
+              typeof status === "object" &&
+              status.kind === "limited" && (
+                <div
+                  role="status"
+                  className="rounded-lg border border-border bg-surface px-4 py-3 text-sm text-sub"
+                >
+                  You&apos;ve reached the fair-use limit for today. Come back
+                  tomorrow to continue.
+                </div>
+              )}
+            {/* limited status opens LimitModal (non-pro); StatusNotice handles error/blocked only */}
             <StatusNotice status={status} onRetry={retry} />
           </div>
         </div>

@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { ServiceDb, StripeEventRow } from "@/lib/stripe/handleEvent";
+import type { ServiceDb, StripeEventRow, ProfileRef } from "@/lib/stripe/handleEvent";
 
 /** Postgres unique-violation SQLSTATE — concurrent webhook delivery race. */
 const UNIQUE_VIOLATION = "23505";
@@ -49,14 +49,21 @@ export function createServiceDb(client: SupabaseClient): ServiceDb {
       if (error) throw new Error(`profiles update failed: ${error.message}`);
     },
 
-    async profileIdByCustomer(customerId: string): Promise<string | null> {
+    async profileByCustomer(customerId: string): Promise<ProfileRef | null> {
       const { data, error } = await client
         .from("profiles")
-        .select("id")
+        .select("id, stripe_subscription_id")
         .eq("stripe_customer_id", customerId)
         .maybeSingle();
       if (error) throw new Error(`profiles lookup failed: ${error.message}`);
-      return typeof data?.id === "string" ? data.id : null;
+      if (!data || typeof data.id !== "string") return null;
+      return {
+        id: data.id,
+        subscriptionId:
+          typeof data.stripe_subscription_id === "string"
+            ? data.stripe_subscription_id
+            : null,
+      };
     },
   };
 }
