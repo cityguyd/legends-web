@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback, startTransition } from "react";
 import { useChatStream } from "@/lib/chat/useChatStream";
 import { Composer } from "./Composer";
 import { ConsultingIndicator } from "./ConsultingIndicator";
 import { FigureHeader, type FigureHeaderFigure, type VoiceMode } from "./FigureHeader";
 import { ResponseCard } from "./ResponseCard";
 import { StatusNotice } from "./StatusNotice";
+import { LimitModal } from "./LimitModal";
 
 const FREE_DAILY_SIGNED_IN = 6;
 const FREE_DAILY_ANON = 3;
@@ -33,6 +34,18 @@ export function ChatThread({
     voiceMode,
   });
 
+  // LimitModal state — opened when status becomes {kind:"limited"}
+  const [limitModalOpen, setLimitModalOpen] = useState(false);
+
+  // Open the limit modal whenever the stream reports a limit hit.
+  // startTransition defers the setState call out of the synchronous effect body,
+  // satisfying the react-hooks/set-state-in-effect lint rule.
+  useEffect(() => {
+    if (typeof status === "object" && status.kind === "limited") {
+      startTransition(() => setLimitModalOpen(true));
+    }
+  }, [status]);
+
   // Auto-scroll: only when the user is "pinned" to the bottom.
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const pinnedRef = useRef(true); // start pinned
@@ -57,6 +70,13 @@ export function ChatThread({
 
   const busy = status === "consulting" || status === "typing";
 
+  // TODO(task-16): replace with real pro detection from Stripe subscription
+  // For now: anonymous users are "anonymous", signed-in are "free".
+  const copyTier = isSignedIn ? "free" : "anonymous";
+
+  // Determine which limit modal kind to show based on auth state.
+  const limitModalKind = isSignedIn ? "free-daily" : "anon-daily";
+
   // Pro detection arrives in Task 15/16; until then the counter hides only
   // while remaining is unknown.
   // Use the hook's live limit when available, fall back to hardcoded caps.
@@ -70,51 +90,60 @@ export function ChatThread({
         : `${remaining} of ${denominator} questions left today`;
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col bg-bg">
-      <FigureHeader
-        figure={figure}
-        showVoiceToggle={showVoiceToggle}
-        voiceMode={voiceMode}
-        onVoiceModeChange={setVoiceMode}
-      />
+    <>
+      <div className="flex min-h-0 flex-1 flex-col bg-bg">
+        <FigureHeader
+          figure={figure}
+          showVoiceToggle={showVoiceToggle}
+          voiceMode={voiceMode}
+          onVoiceModeChange={setVoiceMode}
+        />
 
-      <div
-        ref={scrollContainerRef}
-        onScroll={handleScroll}
-        className="flex-1 overflow-y-auto px-4 py-6"
-      >
-        <div className="mx-auto flex max-w-3xl flex-col gap-4">
-          {messages.length === 0 && (
-            <p className="mt-10 text-center text-sm text-sub">
-              Ask {figure.name} anything — every answer is grounded in their
-              own words.
-            </p>
-          )}
+        <div
+          ref={scrollContainerRef}
+          onScroll={handleScroll}
+          className="flex-1 overflow-y-auto px-4 py-6"
+        >
+          <div className="mx-auto flex max-w-3xl flex-col gap-4">
+            {messages.length === 0 && (
+              <p className="mt-10 text-center text-sm text-sub">
+                Ask {figure.name} anything — every answer is grounded in their
+                own words.
+              </p>
+            )}
 
-          {messages.map((message, index) =>
-            message.role === "user" ? (
-              <div
-                key={index}
-                className="max-w-[80%] self-end rounded-2xl rounded-br-sm bg-bubble px-4 py-2.5 text-sm leading-relaxed text-ink"
-              >
-                {message.text}
-              </div>
-            ) : (
-              <ResponseCard key={index} message={message} />
-            )
-          )}
+            {messages.map((message, index) =>
+              message.role === "user" ? (
+                <div
+                  key={index}
+                  className="max-w-[80%] self-end rounded-2xl rounded-br-sm bg-bubble px-4 py-2.5 text-sm leading-relaxed text-ink"
+                >
+                  {message.text}
+                </div>
+              ) : (
+                <ResponseCard key={index} message={message} tier={copyTier} />
+              )
+            )}
 
-          {status === "consulting" && <ConsultingIndicator />}
-          <StatusNotice status={status} onRetry={retry} />
+            {status === "consulting" && <ConsultingIndicator />}
+            {/* Task 14: limited status opens LimitModal instead of inline notice */}
+            <StatusNotice status={status} onRetry={retry} />
+          </div>
         </div>
+
+        <Composer
+          onSend={send}
+          disabled={busy}
+          remainingLabel={remainingLabel}
+          initialValue={initialQuestion}
+        />
       </div>
 
-      <Composer
-        onSend={send}
-        disabled={busy}
-        remainingLabel={remainingLabel}
-        initialValue={initialQuestion}
+      <LimitModal
+        kind={limitModalKind}
+        open={limitModalOpen}
+        onClose={() => setLimitModalOpen(false)}
       />
-    </div>
+    </>
   );
 }

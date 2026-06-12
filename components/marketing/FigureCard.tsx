@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { isLive } from "@/lib/marketing/data";
+import { NotifyButton } from "./NotifyButton";
 
 export interface FigureCardFigure {
   slug: string;
@@ -85,12 +86,7 @@ export function FigureCard({ figure }: { figure: FigureCardFigure }) {
             Ask {shortName(figure)}
           </Link>
         ) : (
-          <button
-            type="button"
-            className="w-full rounded-lg border border-border bg-card px-4 py-2 text-sm font-semibold text-sub"
-          >
-            Notify me
-          </button>
+          <NotifyButton />
         )}
       </div>
     </article>

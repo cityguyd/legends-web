@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { shortName } from "@/components/marketing/FigureCard";
 import { SourceCard } from "@/components/marketing/SourceCard";
+import { NotifyButton } from "@/components/marketing/NotifyButton";
 import {
   getFigureBySlug,
   getFigures,
@@ -97,12 +98,10 @@ export default async function FigureProfilePage({ params }: Params) {
                 Ask {shortName(figure)}
               </Link>
             ) : (
-              <button
-                type="button"
-                className="rounded-lg border border-border bg-surface px-8 py-3 font-semibold text-sub"
-              >
-                Notify me when {shortName(figure)} arrives
-              </button>
+              <NotifyButton
+                label={`Notify me when ${shortName(figure)} arrives`}
+                className="rounded-lg border border-border bg-surface px-8 py-3 font-semibold text-sub transition-colors hover:bg-card"
+              />
             )}
           </div>
         </div>
