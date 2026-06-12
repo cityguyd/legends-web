@@ -123,8 +123,9 @@ describe("useChatStream", () => {
     expect(msgs[1].confidence).toBe("strong");
     expect(msgs[1].citations).toHaveLength(1);
     expect(msgs[1].citations![0].title).toBe("Source");
-    // remaining updated from usage endpoint
+    // remaining and limit updated from usage endpoint
     expect(result.current.remaining).toBe(9);
+    expect(result.current.limit).toBe(10);
     // pendingQuestion cleared after success
     // (internal ref; we verify it doesn't surface on a no-op retry)
     const fetchSpy = vi.mocked(fetch);
@@ -318,8 +319,9 @@ describe("useChatStream", () => {
       { timeout: 3000 }
     );
 
-    // remaining must stay null — not NaN or negative
+    // remaining and limit must stay null — not NaN or negative
     expect(result.current.remaining).toBeNull();
+    expect(result.current.limit).toBeNull();
   });
 
   test("(f) retry() after success is a no-op (fetch not called again)", async () => {

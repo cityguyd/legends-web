@@ -52,6 +52,11 @@ export interface UseChatStreamResult {
   /** Remaining daily free questions (null while unknown) */
   remaining: number | null;
   /**
+   * Daily question limit from the usage response (null for unlimited/unknown).
+   * Sourced from questions_limit when it is a number.
+   */
+  limit: number | null;
+  /**
    * Limit detail string on 429 — derived from status for convenience.
    * Equivalent to (status as {kind:"limited";detail:string}).detail ?? null.
    */
@@ -89,6 +94,7 @@ export function useChatStream({
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [status, setStatus] = useState<ChatStatus>("idle");
   const [remaining, setRemaining] = useState<number | null>(null);
+  const [limit, setLimit] = useState<number | null>(null);
 
   // Preserved for retry after network error
   const pendingQuestion = useRef<string | null>(null);
@@ -132,6 +138,7 @@ export function useChatStream({
       // questions_limit is null for unlimited (pro) users — keep remaining
       // as null so the counter hides rather than showing a negative/NaN value.
       if (typeof body.questions_limit !== "number") return;
+      setLimit(body.questions_limit);
       setRemaining(body.questions_limit - body.questions_used);
     } catch {
       // Non-critical; leave remaining as-is
@@ -387,5 +394,5 @@ export function useChatStream({
       ? status.detail
       : null;
 
-  return { messages, status, remaining, limitDetail, send, retry };
+  return { messages, status, remaining, limit, limitDetail, send, retry };
 }

@@ -1,13 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import type { SidebarConversation } from "@/lib/chat/conversations";
 
-export interface SidebarConversation {
-  id: string;
-  title: string;
-  createdAt: string | null;
-}
+export type { SidebarConversation };
 
 const FREE_SAVE_CAP = 5;
 
@@ -25,8 +22,9 @@ function PanelContent({
       {isSignedIn ? (
         <>
           {/* Tier detection arrives in Task 15/16 — free cap shown for all. */}
+          {/* TODO(task-15): tier-aware cap */}
           <p className="text-xs text-sub">
-            {conversations.length} of {FREE_SAVE_CAP} saved
+            {Math.min(conversations.length, FREE_SAVE_CAP)} of {FREE_SAVE_CAP} saved
           </p>
           {conversations.length === 0 ? (
             <p className="rounded-lg border border-border bg-card px-3 py-4 text-sm text-sub">
@@ -38,7 +36,7 @@ function PanelContent({
               {conversations.map((conversation) => (
                 <li
                   key={conversation.id}
-                  className="rounded-lg px-3 py-2 hover:bg-card"
+                  className="rounded-lg px-3 py-2"
                 >
                   <p className="truncate text-sm font-medium text-ink">
                     {conversation.title}
@@ -90,6 +88,27 @@ export function Sidebar({
   isSignedIn: boolean;
 }) {
   const [open, setOpen] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
+
+  // Move focus to close button when drawer opens; return to trigger on close.
+  useEffect(() => {
+    if (open) {
+      closeRef.current?.focus();
+    } else {
+      triggerRef.current?.focus();
+    }
+  }, [open]);
+
+  // Escape closes the drawer.
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [open]);
 
   return (
     <>
@@ -100,6 +119,7 @@ export function Sidebar({
 
       {/* Mobile drawer toggle — floats above the composer */}
       <button
+        ref={triggerRef}
         type="button"
         aria-expanded={open}
         aria-label="Open conversations"
@@ -110,7 +130,12 @@ export function Sidebar({
       </button>
 
       {open && (
-        <div className="fixed inset-0 z-50 lg:hidden">
+        <div
+          className="fixed inset-0 z-50 lg:hidden"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Conversations"
+        >
           <button
             type="button"
             aria-label="Close conversations"
@@ -120,6 +145,7 @@ export function Sidebar({
           <div className="absolute inset-y-0 left-0 flex w-72 flex-col bg-surface shadow-xl">
             <div className="flex justify-end px-3 pt-3">
               <button
+                ref={closeRef}
                 type="button"
                 aria-label="Close conversations"
                 onClick={() => setOpen(false)}

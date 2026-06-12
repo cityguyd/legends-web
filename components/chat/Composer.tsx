@@ -38,6 +38,7 @@ export function Composer({
           onChange={(event) => setValue(event.target.value)}
           placeholder="Ask your question…"
           aria-label="Your question"
+          aria-describedby={remainingLabel ? "composer-remaining" : undefined}
           className="min-w-0 flex-1 rounded-full border border-border bg-bg px-4 py-2.5 text-sm text-ink placeholder:text-sub/70 focus:outline-none focus:ring-2 focus:ring-gold/50"
         />
         <button
@@ -49,7 +50,7 @@ export function Composer({
         </button>
       </div>
       {remainingLabel && (
-        <p className="mx-auto mt-2 max-w-3xl px-1 text-xs text-sub">
+        <p id="composer-remaining" className="mx-auto mt-2 max-w-3xl px-1 text-xs text-sub">
           {remainingLabel}
         </p>
       )}

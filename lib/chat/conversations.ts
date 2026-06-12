@@ -1,5 +1,11 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { SidebarConversation } from "@/components/chat/Sidebar";
+
+// Moved here from components/chat/Sidebar.tsx to avoid lib→component import inversion.
+export interface SidebarConversation {
+  id: string;
+  title: string;
+  createdAt: string | null;
+}
 
 /**
  * Reads the signed-in user's saved conversations for the chat sidebar.
@@ -24,6 +30,12 @@ export async function listConversationSummaries(
     return (data ?? []).flatMap((row) => {
       const r = row as Record<string, unknown>;
       if (typeof r.id !== "string") return [];
+      // Guard invalid dates — drop createdAt rather than rendering "Invalid Date"
+      const rawDate = typeof r.created_at === "string" ? r.created_at : null;
+      const createdAt =
+        rawDate !== null && !Number.isNaN(new Date(rawDate).getTime())
+          ? rawDate
+          : null;
       return [
         {
           id: r.id,
@@ -31,7 +43,7 @@ export async function listConversationSummaries(
             typeof r.title === "string" && r.title.length > 0
               ? r.title
               : "Untitled conversation",
-          createdAt: typeof r.created_at === "string" ? r.created_at : null,
+          createdAt,
         },
       ];
     });

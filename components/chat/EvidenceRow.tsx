@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ConfidenceBadge } from "./ConfidenceBadge";
+import { ConfidenceBadge, isRenderableTier } from "./ConfidenceBadge";
 
 /**
  * Citation shape accepted by the evidence row. The engine/hook emits `title`
@@ -36,12 +36,8 @@ export function EvidenceRow({
     return label ? [{ citation, label, index }] : [];
   });
 
-  // Mirrors the tiers ConfidenceBadge renders — "refused"/unknown show nothing,
-  // so don't draw an empty evidence divider for them.
-  const hasBadge =
-    confidence === "strong" ||
-    confidence === "inferred" ||
-    confidence === "speculative";
+  // Use isRenderableTier to avoid duplicating the tier list.
+  const hasBadge = confidence !== undefined && isRenderableTier(confidence);
 
   if (!hasBadge && chips.length === 0) return null;
 

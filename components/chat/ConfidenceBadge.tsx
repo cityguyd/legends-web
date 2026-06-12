@@ -18,6 +18,11 @@ const TIERS: Record<ConfidenceTier, { label: string; pill: string; dot: string }
   },
 };
 
+/** Returns true when `tier` maps to a renderable confidence badge. */
+export function isRenderableTier(tier: string): tier is ConfidenceTier {
+  return tier in TIERS;
+}
+
 export function ConfidenceBadge({ tier }: { tier: string }) {
   // Tier values come from engine-generated jsonb at runtime; render nothing
   // for values we don't recognize (e.g. "refused").
