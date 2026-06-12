@@ -23,6 +23,8 @@ export interface ChatMessage {
   text: string;
   citations?: Citation[];
   confidence?: ConfidenceTier;
+  /** Context chip label surfaced by the engine (Task 13 renders this) */
+  contextChip?: string;
 }
 
 export type ChatStatus =
@@ -31,7 +33,7 @@ export type ChatStatus =
   | "typing"
   | "complete"
   | "error"
-  | { kind: "blocked"; category: string }
+  | { kind: "blocked"; message: string }
   | { kind: "limited"; detail: string };
 
 /**
@@ -63,23 +65,22 @@ export function applyEvent(
   state: StreamAccumulator,
   event: SSEEvent
 ): StreamAccumulator {
+  const d = event.data;
+
   switch (event.type) {
     case "chunk": {
-      const text =
-        typeof (event.data as Record<string, unknown>)["text"] === "string"
-          ? (event.data as Record<string, unknown>)["text"]
-          : "";
-      return { ...state, fullText: state.fullText + (text as string) };
+      const text = typeof d["text"] === "string" ? d["text"] : "";
+      return { ...state, fullText: state.fullText + text };
     }
 
     case "citations": {
-      const raw = (event.data as Record<string, unknown>)["data"];
+      const raw = d["data"];
       const citations = parseCitationsPayload(raw);
       return { ...state, pendingCitations: citations };
     }
 
     case "confidence": {
-      const tier = (event.data as Record<string, unknown>)["tier"];
+      const tier = d["tier"];
       return {
         ...state,
         pendingConfidence: isConfidenceTier(tier) ? tier : "inferred",
@@ -90,7 +91,7 @@ export function applyEvent(
       return { ...state, readyToReveal: true };
 
     case "context_chip": {
-      const label = (event.data as Record<string, unknown>)["label"];
+      const label = d["label"];
       return {
         ...state,
         contextChip: typeof label === "string" ? label : null,

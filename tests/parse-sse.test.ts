@@ -53,6 +53,35 @@ test("handles context_chip event", () => {
   expect((events[0].data as { label: string }).label).toBe("mental health");
 });
 
+test("normalises CRLF line endings", () => {
+  const buf =
+    'event: chunk\r\ndata: {"text":"Hello"}\r\n\r\n' +
+    'event: done\r\ndata: {}\r\n\r\n';
+  const { events, rest } = parseSSEChunk(buf);
+  expect(events.map((e) => e.type)).toEqual(["chunk", "done"]);
+  expect(rest).toBe("");
+});
+
+test("skips malformed JSON and parses subsequent valid events", () => {
+  const buf =
+    'event: chunk\ndata: {BROKEN\n\n' +
+    'event: done\ndata: {}\n\n';
+  const { events } = parseSSEChunk(buf);
+  expect(events).toHaveLength(1);
+  expect(events[0].type).toBe("done");
+});
+
+test("joins multi-line data: lines with newline per SSE spec", () => {
+  // Per SSE spec, multiple data: lines in one message are joined with \n.
+  // The joined string '{"type":"chunk","text":"Hi"}' is valid JSON.
+  // (Splitting across data: lines is allowed; the JSON itself must be valid.)
+  const buf =
+    'event: chunk\ndata: {"type":"chunk",\ndata: "text":"Hi"}\n\n';
+  const { events } = parseSSEChunk(buf);
+  expect(events).toHaveLength(1);
+  expect(events[0].type).toBe("chunk");
+});
+
 // ── chatReducer ───────────────────────────────────────────────────────────────
 
 describe("applyEvent — state machine transitions", () => {

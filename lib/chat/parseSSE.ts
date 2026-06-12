@@ -8,6 +8,10 @@
  * The Legends Library engine uses format 2 (single data line with `type`
  * embedded in the JSON). Format 1 is supported so the spec-required tests
  * pass and the parser is forward-compatible with any future gateway.
+ *
+ * Per SSE spec, multiple `data:` lines within a single message are joined
+ * with `\n`. CRLF sequences are normalised to `\n` at entry so the rest of
+ * the parser only deals with `\n`.
  */
 
 export type SSEEvent = { type: string; data: Record<string, unknown> };
@@ -15,9 +19,13 @@ export type SSEEvent = { type: string; data: Record<string, unknown> };
 export function parseSSEChunk(
   buffer: string
 ): { events: SSEEvent[]; rest: string } {
+  // Normalise CRLF → LF (safe across chunk boundaries: a trailing lone \r
+  // stays in `rest` and will be re-normalised on the next call).
+  const normalised = buffer.replace(/\r\n/g, "\n");
+
   const events: SSEEvent[] = [];
   // Split on double-newline SSE message boundaries
-  const parts = buffer.split("\n\n");
+  const parts = normalised.split("\n\n");
   // Last element is either empty (clean buffer) or an incomplete message
   const rest = parts.pop() ?? "";
 
@@ -25,7 +33,7 @@ export function parseSSEChunk(
     if (!part.trim()) continue;
 
     let eventType = "message";
-    let dataStr = "";
+    const dataLines: string[] = [];
     let hasExplicitEvent = false;
 
     for (const line of part.split("\n")) {
@@ -33,16 +41,22 @@ export function parseSSEChunk(
         eventType = line.slice(7).trim();
         hasExplicitEvent = true;
       } else if (line.startsWith("data: ")) {
-        dataStr += line.slice(6);
+        // Collect each data line; per SSE spec they are joined with \n
+        dataLines.push(line.slice(6));
       }
     }
 
-    if (!dataStr) continue;
+    if (dataLines.length === 0) continue;
+
+    const dataStr = dataLines.join("\n");
 
     let parsed: Record<string, unknown>;
     try {
       parsed = JSON.parse(dataStr) as Record<string, unknown>;
     } catch {
+      if (process.env.NODE_ENV === "development") {
+        console.warn("[parseSSE] malformed JSON in SSE data — skipping event:", dataStr);
+      }
       continue;
     }
 

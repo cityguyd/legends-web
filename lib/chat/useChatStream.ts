@@ -16,7 +16,7 @@
  * Remaining questions is fetched from /api/usage after each complete stream.
  */
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { parseSSEChunk } from "./parseSSE";
 import {
@@ -51,16 +51,35 @@ export interface UseChatStreamResult {
   status: ChatStatus;
   /** Remaining daily free questions (null while unknown) */
   remaining: number | null;
-  /** Limit detail string on 429 (shown by Task 14 modal) */
+  /**
+   * Limit detail string on 429 — derived from status for convenience.
+   * Equivalent to (status as {kind:"limited";detail:string}).detail ?? null.
+   */
   limitDetail: string | null;
   send: (question: string) => void;
   retry: () => void;
 }
 
-// ── Hook ─────────────────────────────────────────────────────────────────────
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
 const CHARS_PER_FRAME = 40;
 const ENGINE_URL = process.env.NEXT_PUBLIC_ENGINE_URL ?? "";
+
+/** Returns a stable browser-tab session id, or a short random token on SSR. */
+function getSessionId(): string {
+  if (typeof window === "undefined") {
+    // Server-side render path — return a one-off id; the real id is set on
+    // the client during hydration.
+    return crypto.randomUUID();
+  }
+  const existing = sessionStorage.getItem("ll_session_id");
+  if (existing) return existing;
+  const id = crypto.randomUUID();
+  sessionStorage.setItem("ll_session_id", id);
+  return id;
+}
+
+// ── Hook ─────────────────────────────────────────────────────────────────────
 
 export function useChatStream({
   figureSlug,
@@ -70,12 +89,29 @@ export function useChatStream({
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [status, setStatus] = useState<ChatStatus>("idle");
   const [remaining, setRemaining] = useState<number | null>(null);
-  const [limitDetail, setLimitDetail] = useState<string | null>(null);
 
   // Preserved for retry after network error
   const pendingQuestion = useRef<string | null>(null);
   // In-flight guard — only one stream per tab
   const streaming = useRef(false);
+  // AbortController for the current in-flight fetch
+  const abortRef = useRef<AbortController | null>(null);
+  // rAF id for the typing reveal loop
+  const rafRef = useRef<ReturnType<typeof requestAnimationFrame> | null>(null);
+
+  // ── Abort + cleanup on unmount or figureSlug change ───────────────────────
+
+  useEffect(() => {
+    return () => {
+      abortRef.current?.abort();
+      abortRef.current = null;
+      if (rafRef.current !== null) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
+      }
+      streaming.current = false;
+    };
+  }, [figureSlug]);
 
   // ── Usage fetch ───────────────────────────────────────────────────────────
 
@@ -123,8 +159,9 @@ export function useChatStream({
         });
 
         if (!done) {
-          requestAnimationFrame(tick);
+          rafRef.current = requestAnimationFrame(tick);
         } else {
+          rafRef.current = null;
           // Commit final state with all metadata
           setMessages((prev) => {
             const updated = [...prev];
@@ -135,12 +172,14 @@ export function useChatStream({
                 text: acc.fullText,
                 citations: acc.pendingCitations,
                 confidence: acc.pendingConfidence,
+                contextChip: acc.contextChip ?? undefined,
               };
             }
             return updated;
           });
           setStatus("complete");
           streaming.current = false;
+          pendingQuestion.current = null;
           void fetchUsage();
         }
       };
@@ -150,7 +189,7 @@ export function useChatStream({
         ...prev,
         { role: "figure", figureName: name, text: "" } as ChatMessage,
       ]);
-      requestAnimationFrame(tick);
+      rafRef.current = requestAnimationFrame(tick);
     },
     [fetchUsage]
   );
@@ -162,7 +201,6 @@ export function useChatStream({
       if (streaming.current) return;
       streaming.current = true;
       pendingQuestion.current = question;
-      setLimitDetail(null);
 
       // Append the user message
       setMessages((prev) => [...prev, { role: "user", text: question }]);
@@ -180,21 +218,16 @@ export function useChatStream({
         // Auth failure is non-fatal; proceed anonymously
       }
 
-      // Build a stable session_id for this browser tab
-      const sessionId =
-        typeof window !== "undefined"
-          ? (sessionStorage.getItem("ll_session_id") ??
-            (() => {
-              const id = crypto.randomUUID();
-              sessionStorage.setItem("ll_session_id", id);
-              return id;
-            })())
-          : "ssr";
+      const sessionId = getSessionId();
+
+      const controller = new AbortController();
+      abortRef.current = controller;
 
       let res: Response;
       try {
         res = await fetch(`${ENGINE_URL}/api/chat`, {
           method: "POST",
+          signal: controller.signal,
           headers: {
             "Content-Type": "application/json",
             ...(jwt ? { Authorization: `Bearer ${jwt}` } : {}),
@@ -206,8 +239,14 @@ export function useChatStream({
             voice_mode: voiceMode,
           }),
         });
-      } catch {
+      } catch (err) {
         streaming.current = false;
+        abortRef.current = null;
+        // Abort is intentional — reset to idle silently, do not set error
+        if (err instanceof Error && err.name === "AbortError") {
+          setStatus("idle");
+          return;
+        }
         setStatus("error");
         return;
       }
@@ -216,6 +255,7 @@ export function useChatStream({
 
       if (!res.ok) {
         streaming.current = false;
+        abortRef.current = null;
 
         if (res.status === 429) {
           let detail = "Daily question limit reached.";
@@ -225,7 +265,6 @@ export function useChatStream({
           } catch {
             /* ignore */
           }
-          setLimitDetail(detail);
           setStatus({ kind: "limited", detail });
           return;
         }
@@ -233,7 +272,7 @@ export function useChatStream({
         if (res.status === 409) {
           setStatus({
             kind: "blocked",
-            category:
+            message:
               "This figure's library isn't ready yet. Please check back soon.",
           });
           return;
@@ -248,6 +287,7 @@ export function useChatStream({
       const reader = res.body?.getReader();
       if (!reader) {
         streaming.current = false;
+        abortRef.current = null;
         setStatus("error");
         return;
       }
@@ -271,8 +311,17 @@ export function useChatStream({
 
           if (acc.readyToReveal) break;
         }
-      } catch {
+        // Flush any bytes held in the decoder
+        buffer += decoder.decode();
+      } catch (err) {
         streaming.current = false;
+        abortRef.current = null;
+        try { reader.cancel(); } catch { /* ignore */ }
+        // Abort is intentional — reset to idle silently
+        if (err instanceof Error && err.name === "AbortError") {
+          setStatus("idle");
+          return;
+        }
         setStatus("error");
         return;
       } finally {
@@ -281,6 +330,16 @@ export function useChatStream({
         } catch {
           /* ignore */
         }
+      }
+
+      abortRef.current = null;
+
+      // If the stream closed without a `done` event, the response was truncated.
+      if (!acc.readyToReveal) {
+        streaming.current = false;
+        // Preserve pendingQuestion so retry() can re-send
+        setStatus("error");
+        return;
       }
 
       // Hand off to the typing reveal animation
@@ -292,15 +351,25 @@ export function useChatStream({
   // ── Retry ─────────────────────────────────────────────────────────────────
 
   const retry = useCallback(() => {
-    if (pendingQuestion.current) {
-      // Remove the last user message (which failed) before re-sending
-      setMessages((prev) => {
-        const last = prev[prev.length - 1];
-        return last?.role === "user" ? prev.slice(0, -1) : prev;
-      });
-      void send(pendingQuestion.current);
-    }
-  }, [send]);
+    // No-op unless we are in the error state and not already streaming
+    if (streaming.current) return;
+    if (status !== "error") return;
+    const q = pendingQuestion.current;
+    if (!q) return;
+    // Remove the last user message (which failed) before re-sending
+    setMessages((prev) => {
+      const last = prev[prev.length - 1];
+      return last?.role === "user" ? prev.slice(0, -1) : prev;
+    });
+    void send(q);
+  }, [send, status]);
+
+  // ── Derived convenience fields ────────────────────────────────────────────
+
+  const limitDetail =
+    typeof status === "object" && status.kind === "limited"
+      ? status.detail
+      : null;
 
   return { messages, status, remaining, limitDetail, send, retry };
 }
