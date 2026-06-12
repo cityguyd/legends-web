@@ -132,7 +132,7 @@ export default async function FigureProfilePage({ params }: Params) {
         ) : (
           <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {sources.map((source) => (
-              <li key={`${source.doc_title}-${source.year ?? "na"}`}>
+              <li key={source.id}>
                 <SourceCard source={source} />
               </li>
             ))}

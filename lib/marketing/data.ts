@@ -1,5 +1,19 @@
 import { createClient } from "@supabase/supabase-js";
 import { unstable_cache } from "next/cache";
+import {
+  parseFeaturedQuestionRow,
+  parseFigureRow,
+  parseResponses,
+} from "./parsers";
+
+// Re-export parsers so existing callers that import from data.ts keep working.
+export {
+  parseCitations,
+  parseFeaturedQuestionRow,
+  parseFigureRow,
+  parseResponses,
+  truncateExcerpt,
+} from "./parsers";
 
 export interface Figure {
   slug: string;
@@ -16,6 +30,7 @@ export interface Figure {
 export interface FeaturedQuestion {
   slug: string;
   question: string;
+  format?: string;
   figure_slug?: string | null;
   figure_name?: string | null;
   subtitle?: string | null;
@@ -29,6 +44,7 @@ export interface FigureDetail extends Figure {
 export type SourceLicense = "public_domain" | "licensed" | "copyrighted_fair_use";
 
 export interface SourceDoc {
+  id: string;
   doc_title: string;
   doc_type: string;
   year: number | null;
@@ -77,24 +93,11 @@ function anonClient() {
   return createClient(url, key, { auth: { persistSession: false } });
 }
 
-/** Runtime guard for a figures row: require slug and name, default the rest. */
-function parseFigureRow(row: unknown): Figure | null {
-  const r = row as Record<string, unknown> | null;
-  if (typeof r?.slug !== "string" || typeof r?.name !== "string") return null;
-  return {
-    slug: r.slug,
-    name: r.name,
-    era: typeof r.era === "string" ? r.era : null,
-    region: typeof r.region === "string" ? r.region : null,
-    category: Array.isArray(r.category)
-      ? r.category.filter((c): c is string => typeof c === "string")
-      : [],
-    wave: typeof r.wave === "number" ? r.wave : LIVE_WAVE,
-    tagline: typeof r.tagline === "string" ? r.tagline : null,
-    portrait_url: typeof r.portrait_url === "string" ? r.portrait_url : null,
-    featured_order: typeof r.featured_order === "number" ? r.featured_order : null,
-    // TODO(data): add short_name column to figures table when ready.
-  } satisfies Figure;
+function parseFigureDetailRow(row: unknown): FigureDetail | null {
+  const figure = parseFigureRow(row);
+  const id = (row as Record<string, unknown> | null)?.id;
+  if (!figure || typeof id !== "string") return null;
+  return { ...figure, id };
 }
 
 async function _fetchFigures(): Promise<Figure[]> {
@@ -146,13 +149,10 @@ async function _fetchFeaturedQuestions(): Promise<FeaturedQuestion[]> {
       console.error("[getFeaturedQuestions] Supabase error:", error);
       return [];
     }
-    return (data ?? [])
-      .filter(
-        (row) =>
-          typeof (row as Record<string, unknown>)?.slug === "string" &&
-          typeof (row as Record<string, unknown>)?.question === "string"
-      )
-      .map((row) => row as unknown as FeaturedQuestion);
+    return (data ?? []).flatMap((row) => {
+      const q = parseFeaturedQuestionRow(row);
+      return q ? [q] : [];
+    });
   } catch (err) {
     console.error("[getFeaturedQuestions] Unexpected error:", err);
     return [];
@@ -167,13 +167,6 @@ export const getFeaturedQuestions = unstable_cache(
 
 const FIGURE_DETAIL_COLUMNS =
   "id, slug, name, era, region, category, wave, tagline, portrait_url, featured_order";
-
-function parseFigureDetailRow(row: unknown): FigureDetail | null {
-  const figure = parseFigureRow(row);
-  const id = (row as Record<string, unknown> | null)?.id;
-  if (!figure || typeof id !== "string") return null;
-  return { ...figure, id };
-}
 
 async function _fetchFigureBySlug(slug: string): Promise<FigureDetail | null> {
   const supabase = anonClient();
@@ -244,7 +237,7 @@ async function _fetchSourcesForFigure(figureId: string): Promise<SourceDoc[]> {
     // Only 'active' sources are public — pending/rejected/failed stay hidden.
     const { data, error } = await supabase
       .from("source_manifest")
-      .select("doc_title, doc_type, year, license")
+      .select("id, doc_title, doc_type, year, license")
       .eq("figure_id", figureId)
       .eq("status", "active")
       .order("year", { ascending: true, nullsFirst: false });
@@ -259,12 +252,15 @@ async function _fetchSourcesForFigure(figureId: string): Promise<SourceDoc[]> {
       }
       return [
         {
+          id: typeof r.id === "string" ? r.id : `${r.doc_title}-${r.year ?? "na"}`,
           doc_title: r.doc_title,
           doc_type: r.doc_type,
           year: typeof r.year === "number" ? r.year : null,
+          // Unknown license values fall back to "licensed" (restrictive),
+          // not "public_domain", to avoid over-permissive assumptions.
           license: SOURCE_LICENSES.includes(r.license as SourceLicense)
             ? (r.license as SourceLicense)
-            : "public_domain",
+            : "licensed",
         } satisfies SourceDoc,
       ];
     });
@@ -297,13 +293,10 @@ async function _fetchFeaturedQuestionsForFigure(
       console.error("[getFeaturedQuestionsForFigure] Supabase error:", error);
       return [];
     }
-    return (data ?? [])
-      .filter(
-        (row) =>
-          typeof (row as Record<string, unknown>)?.slug === "string" &&
-          typeof (row as Record<string, unknown>)?.question === "string"
-      )
-      .map((row) => row as unknown as FeaturedQuestion);
+    return (data ?? []).flatMap((row) => {
+      const q = parseFeaturedQuestionRow(row);
+      return q ? [q] : [];
+    });
   } catch (err) {
     console.error("[getFeaturedQuestionsForFigure] Unexpected error:", err);
     return [];
@@ -315,52 +308,6 @@ export const getFeaturedQuestionsForFigure = unstable_cache(
   ["featured-questions-for-figure"],
   { revalidate: 3600 }
 );
-
-const EXCERPT_MAX = 300;
-
-function truncateExcerpt(text: string): string {
-  return text.length <= EXCERPT_MAX ? text : `${text.slice(0, EXCERPT_MAX)}…`;
-}
-
-function parseCitations(raw: unknown): FeaturedCitation[] {
-  if (!Array.isArray(raw)) return [];
-  return raw.flatMap((entry) => {
-    const c = entry as Record<string, unknown> | null;
-    if (typeof c?.title !== "string") return [];
-    return [
-      {
-        title: c.title,
-        url: typeof c.url === "string" ? c.url : null,
-        year: typeof c.year === "number" ? c.year : null,
-        snippet:
-          typeof c.snippet === "string" ? truncateExcerpt(c.snippet) : null,
-      } satisfies FeaturedCitation,
-    ];
-  });
-}
-
-/**
- * Parses the engine-generated `responses` jsonb (legends/featured.py):
- * a list of { figure_id, figure_name, answer, citations, confidence } where
- * citations are { title, url, year, snippet }. Guards every field — entries
- * without answer text are dropped.
- */
-function parseResponses(raw: unknown): FeaturedResponse[] {
-  if (!Array.isArray(raw)) return [];
-  return raw.flatMap((entry) => {
-    const r = entry as Record<string, unknown> | null;
-    if (typeof r?.answer !== "string" || r.answer.length === 0) return [];
-    return [
-      {
-        figureId: typeof r.figure_id === "string" ? r.figure_id : null,
-        figureName: typeof r.figure_name === "string" ? r.figure_name : null,
-        answer: r.answer,
-        citations: parseCitations(r.citations),
-        confidence: typeof r.confidence === "string" ? r.confidence : "inferred",
-      } satisfies FeaturedResponse,
-    ];
-  });
-}
 
 async function _fetchFeaturedQuestionBySlug(
   slug: string

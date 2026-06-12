@@ -1,9 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import {
-  ConfidenceBadge,
-  type ConfidenceTier,
-} from "@/components/chat/ConfidenceBadge";
+import { ConfidenceBadge } from "@/components/chat/ConfidenceBadge";
 import { shortName } from "@/components/marketing/FigureCard";
 import {
   getFeaturedQuestionBySlug,
@@ -91,7 +88,7 @@ function ResponseBlock({
       </div>
 
       <div className="mt-5 flex flex-wrap items-center gap-3 border-t border-border pt-4">
-        <ConfidenceBadge tier={response.confidence as ConfidenceTier} />
+        <ConfidenceBadge tier={response.confidence} />
         {response.citations.length > 0 && (
           <span className="text-sm text-sub">
             Verified against {response.citations.length}{" "}
@@ -110,7 +107,12 @@ export default async function QuestionAnalysisPage({ params }: Params) {
 
   const figures = await getFiguresByIds(question.figureIds);
   const figureById = new Map(figures.map((f) => [f.id, f]));
-  const liveFigures = figures.filter(isLive);
+  const liveFigures = figures
+    .filter(isLive)
+    .sort(
+      (a, b) =>
+        question.figureIds.indexOf(a.id) - question.figureIds.indexOf(b.id)
+    );
 
   const evidence = question.responses.flatMap((response) =>
     response.citations.map((citation) => ({
@@ -170,7 +172,18 @@ export default async function QuestionAnalysisPage({ params }: Params) {
                   className="rounded-xl border border-border bg-card p-4"
                 >
                   <p className="text-sm font-semibold text-ink">
-                    {citation.title}
+                    {citation.url ? (
+                      <a
+                        href={citation.url}
+                        rel="noopener noreferrer"
+                        target="_blank"
+                        className="underline hover:text-gold-dark"
+                      >
+                        {citation.title}
+                      </a>
+                    ) : (
+                      citation.title
+                    )}
                     {citation.year !== null && (
                       <span className="font-normal text-sub">
                         {" "}
