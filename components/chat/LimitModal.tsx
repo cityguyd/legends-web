@@ -221,23 +221,27 @@ export function LimitModal({
       ref={dialogRef}
       aria-labelledby="limit-modal-heading"
       onClick={handleDialogClick}
-      className="mx-4 w-full max-w-md rounded-2xl border border-border bg-surface p-8 shadow-xl backdrop:bg-transparent open:flex open:flex-col"
+      className="m-auto w-[calc(100%-2rem)] max-w-md rounded-2xl border border-border bg-surface shadow-xl open:flex open:flex-col"
     >
-      {/* Close button */}
-      <button
-        type="button"
-        aria-label="Close"
-        onClick={onClose}
-        className="absolute right-4 top-4 rounded-md border border-border bg-surface p-1 text-sub hover:text-ink"
-      >
-        ✕
-      </button>
+      <div className="p-8">
+        {/* Close button */}
+        <button
+          type="button"
+          aria-label="Close"
+          onClick={onClose}
+          className="absolute right-4 top-4 rounded-md border border-border bg-surface p-1 text-sub hover:text-ink"
+        >
+          ✕
+        </button>
 
-      <ModalContent
-        kind={kind}
-        onClose={onClose}
-        onNotifySubmit={onNotifySubmit}
-      />
+        {/* key=open remounts ModalContent on each open, resetting notify form state */}
+        <ModalContent
+          key={String(open)}
+          kind={kind}
+          onClose={onClose}
+          onNotifySubmit={onNotifySubmit}
+        />
+      </div>
     </dialog>
   );
 }
