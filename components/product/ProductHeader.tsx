@@ -4,6 +4,7 @@ const navLinks = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/conversations", label: "Conversations" },
   { href: "/figures", label: "Figures" },
+  { href: "/account", label: "Account" },
 ];
 
 /** Signed-in header for the dashboard / conversations pages. */

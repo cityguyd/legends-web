@@ -20,11 +20,14 @@ const PINNED_THRESHOLD = 60;
 export function ChatThread({
   figure,
   isSignedIn,
+  isPro = false,
   showVoiceToggle,
   initialQuestion,
 }: {
   figure: FigureHeaderFigure;
   isSignedIn: boolean;
+  /** From profiles.tier (server-read) — the only source of truth for access. */
+  isPro?: boolean;
   showVoiceToggle: boolean;
   /** From ?q= — prefills the composer, never auto-sends. */
   initialQuestion?: string;
@@ -71,20 +74,23 @@ export function ChatThread({
 
   const busy = status === "consulting" || status === "typing";
 
-  // TODO(task-16): replace with real pro detection from Stripe subscription
-  // For now: anonymous users are "anonymous", signed-in are "free".
-  const copyTier = isSignedIn ? ("free" as const) : ("anonymous" as const);
+  // Real tier from profiles.tier (set by the Stripe webhook): pro copies
+  // clean (no attribution line); free/anonymous get the attribution suffix.
+  const copyTier = isPro
+    ? ("pro" as const)
+    : isSignedIn
+      ? ("free" as const)
+      : ("anonymous" as const);
 
   // Determine which limit modal kind to show based on auth state.
   const limitModalKind = isSignedIn ? "free-daily" : "anon-daily";
 
-  // Pro detection arrives in Task 15/16; until then the counter hides only
-  // while remaining is unknown.
+  // Pro has no daily cap (fair use) — hide the counter entirely.
   // Use the hook's live limit when available, fall back to hardcoded caps.
   const denominator =
     limit !== null ? limit : isSignedIn ? FREE_DAILY_SIGNED_IN : FREE_DAILY_ANON;
   const remainingLabel =
-    remaining === null
+    isPro || remaining === null
       ? null
       : isSignedIn
         ? `${remaining} of ${denominator} free questions left today`

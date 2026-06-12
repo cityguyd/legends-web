@@ -12,9 +12,11 @@ export type { SidebarConversation };
 function PanelContent({
   conversations,
   isSignedIn,
+  isPro,
 }: {
   conversations: SidebarConversation[];
   isSignedIn: boolean;
+  isPro: boolean;
 }) {
   return (
     <div className="flex h-full flex-col gap-4 p-5">
@@ -22,11 +24,12 @@ function PanelContent({
 
       {isSignedIn ? (
         <>
-          {/* Tier detection arrives in Task 15/16 — free cap shown for all. */}
-          {/* TODO(task-15): tier-aware cap */}
-          <p className="text-xs text-sub">
-            {Math.min(conversations.length, FREE_SAVE_CAP)} of {FREE_SAVE_CAP} saved
-          </p>
+          {/* Pro saves are unlimited — the cap badge is free-tier only. */}
+          {!isPro && (
+            <p className="text-xs text-sub">
+              {Math.min(conversations.length, FREE_SAVE_CAP)} of {FREE_SAVE_CAP} saved
+            </p>
+          )}
           {conversations.length === 0 ? (
             <p className="rounded-lg border border-border bg-card px-3 py-4 text-sm text-sub">
               No saved conversations yet. Ask your first question to get
@@ -84,9 +87,12 @@ function PanelContent({
 export function Sidebar({
   conversations,
   isSignedIn,
+  isPro = false,
 }: {
   conversations: SidebarConversation[];
   isSignedIn: boolean;
+  /** From profiles.tier (server-read); hides the free save-cap badge. */
+  isPro?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -118,7 +124,11 @@ export function Sidebar({
     <>
       {/* Desktop sidebar */}
       <aside className="hidden w-72 shrink-0 border-r border-border bg-surface lg:block">
-        <PanelContent conversations={conversations} isSignedIn={isSignedIn} />
+        <PanelContent
+          conversations={conversations}
+          isSignedIn={isSignedIn}
+          isPro={isPro}
+        />
       </aside>
 
       {/* Mobile drawer toggle — floats above the composer */}
@@ -162,6 +172,7 @@ export function Sidebar({
               <PanelContent
                 conversations={conversations}
                 isSignedIn={isSignedIn}
+                isPro={isPro}
               />
             </div>
           </div>

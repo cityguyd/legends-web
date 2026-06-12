@@ -34,7 +34,18 @@ export default async function ChatPage({ params, searchParams }: Props) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const conversations = user ? await listConversations(20) : [];
+  const [conversations, profileResult] = user
+    ? await Promise.all([
+        listConversations(20),
+        supabase
+          .from("profiles")
+          .select("tier")
+          .eq("id", user.id)
+          .maybeSingle(),
+      ])
+    : [[], null];
+  // profiles.tier is the only source of truth for access (written by webhook).
+  const isPro = profileResult?.data?.tier === "pro";
 
   // ?q= prefills the composer (dashboard links here in Task 15); never auto-sent.
   const initialQuestion =
@@ -44,7 +55,11 @@ export default async function ChatPage({ params, searchParams }: Props) {
 
   return (
     <div className="flex h-screen bg-bg text-ink">
-      <Sidebar conversations={conversations} isSignedIn={Boolean(user)} />
+      <Sidebar
+        conversations={conversations}
+        isSignedIn={Boolean(user)}
+        isPro={isPro}
+      />
       <ChatThread
         figure={{
           slug: figure.slug,
@@ -54,6 +69,7 @@ export default async function ChatPage({ params, searchParams }: Props) {
           portraitUrl: figure.portrait_url,
         }}
         isSignedIn={Boolean(user)}
+        isPro={isPro}
         showVoiceToggle={figure.hasHistoricalVoice}
         initialQuestion={initialQuestion}
       />
