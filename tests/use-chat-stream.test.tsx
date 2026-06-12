@@ -290,6 +290,38 @@ describe("useChatStream", () => {
     expect(result.current.messages).toHaveLength(0);
   });
 
+  test("(h) unlimited (pro) user: questions_limit null → remaining stays null", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn()
+        // POST /api/chat
+        .mockResolvedValueOnce(sseResponse(successSSE()))
+        // GET /api/usage — pro user, no limit
+        .mockResolvedValueOnce(
+          new Response(
+            JSON.stringify({ questions_used: 42, questions_limit: null }),
+            { status: 200 }
+          )
+        )
+    );
+
+    const { result } = renderHook(() => useChatStream(DEFAULT_OPTS));
+
+    await act(async () => {
+      result.current.send("Unlimited question");
+    });
+
+    await vi.waitFor(
+      () => {
+        expect(result.current.status).toBe("complete");
+      },
+      { timeout: 3000 }
+    );
+
+    // remaining must stay null — not NaN or negative
+    expect(result.current.remaining).toBeNull();
+  });
+
   test("(f) retry() after success is a no-op (fetch not called again)", async () => {
     const fetchSpy = vi
       .fn()

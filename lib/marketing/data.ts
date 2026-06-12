@@ -41,6 +41,13 @@ export interface FigureDetail extends Figure {
   id: string;
   /** Corpus gate (migration 003) — chat is closed until this flips true. */
   min_corpus_ok: boolean;
+  /**
+   * True when the figure has a historical voice note (non-null
+   * historical_voice_note in the DB).  Drives the voice toggle visibility.
+   * Defaults to false so missing/null → toggle hidden (engine falls back to
+   * modern anyway).
+   */
+  hasHistoricalVoice: boolean;
 }
 
 export type SourceLicense = "public_domain" | "licensed" | "copyrighted_fair_use";
@@ -82,20 +89,6 @@ export function isLive(figure: { wave: number }): boolean {
   return figure.wave === LIVE_WAVE;
 }
 
-/**
- * True for present-day figures (e.g. Charlie Kirk) — they have no "period
- * voice" to reconstruct, so the chat voice toggle is hidden.
- *
- * TODO: replace this heuristic with a real `contemporary` column on figures
- * when one lands in a migration.
- */
-export function isContemporary(figure: {
-  era: string | null;
-  category: string[];
-}): boolean {
-  if (figure.era && /[-–—]\s*present$/i.test(figure.era.trim())) return true;
-  return figure.category.some((c) => c.toLowerCase().includes("contemporary"));
-}
 
 /**
  * Anonymous, cookie-free Supabase client for public marketing data.
@@ -116,7 +109,15 @@ function parseFigureDetailRow(row: unknown): FigureDetail | null {
   const id = r?.id;
   if (!figure || typeof id !== "string") return null;
   // Default false (closed) — the corpus gate must be explicitly opened.
-  return { ...figure, id, min_corpus_ok: r?.min_corpus_ok === true };
+  // hasHistoricalVoice: missing/null column → false → toggle hidden.
+  return {
+    ...figure,
+    id,
+    min_corpus_ok: r?.min_corpus_ok === true,
+    hasHistoricalVoice:
+      typeof r?.historical_voice_note === "string" &&
+      r.historical_voice_note.length > 0,
+  };
 }
 
 async function _fetchFigures(): Promise<Figure[]> {
@@ -185,7 +186,7 @@ export const getFeaturedQuestions = unstable_cache(
 );
 
 const FIGURE_DETAIL_COLUMNS =
-  "id, slug, name, era, region, category, wave, tagline, portrait_url, featured_order, min_corpus_ok";
+  "id, slug, name, era, region, category, wave, tagline, portrait_url, featured_order, min_corpus_ok, historical_voice_note";
 
 async function _fetchFigureBySlug(slug: string): Promise<FigureDetail | null> {
   const supabase = anonClient();

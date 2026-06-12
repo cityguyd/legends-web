@@ -2,11 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { ChatThread } from "@/components/chat/ChatThread";
 import { Sidebar } from "@/components/chat/Sidebar";
 import { listConversationSummaries } from "@/lib/chat/conversations";
-import {
-  getFigureBySlug,
-  isContemporary,
-  isLive,
-} from "@/lib/marketing/data";
+import { getFigureBySlug, isLive } from "@/lib/marketing/data";
 import { createClient } from "@/lib/supabase/server";
 
 type Props = {
@@ -58,7 +54,7 @@ export default async function ChatPage({ params, searchParams }: Props) {
           portraitUrl: figure.portrait_url,
         }}
         isSignedIn={Boolean(user)}
-        showVoiceToggle={!isContemporary(figure)}
+        showVoiceToggle={figure.hasHistoricalVoice}
         initialQuestion={initialQuestion}
       />
     </div>

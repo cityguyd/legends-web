@@ -127,8 +127,11 @@ export function useChatStream({
       if (!res.ok) return;
       const body = (await res.json()) as {
         questions_used: number;
-        questions_limit: number;
+        questions_limit: number | null;
       };
+      // questions_limit is null for unlimited (pro) users — keep remaining
+      // as null so the counter hides rather than showing a negative/NaN value.
+      if (typeof body.questions_limit !== "number") return;
       setRemaining(body.questions_limit - body.questions_used);
     } catch {
       // Non-critical; leave remaining as-is
