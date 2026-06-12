@@ -3,13 +3,13 @@ import { Playfair_Display, Inter } from "next/font/google";
 import "./globals.css";
 
 const playfairDisplay = Playfair_Display({
-  variable: "--font-display",
+  variable: "--font-playfair",
   subsets: ["latin"],
   display: "swap",
 });
 
 const inter = Inter({
-  variable: "--font-body",
+  variable: "--font-inter",
   subsets: ["latin"],
   display: "swap",
 });

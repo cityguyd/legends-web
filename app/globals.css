@@ -31,8 +31,14 @@
   --color-gold-dark: var(--gold-dark);
   --color-border: var(--border);
   --color-bubble: var(--bubble);
-  --font-display: var(--font-display);
-  --font-body: var(--font-body);
+  --color-confidence-doc: var(--confidence-doc);
+  --color-confidence-doc-bg: var(--confidence-doc-bg);
+  --color-confidence-inf: var(--confidence-inf);
+  --color-confidence-inf-bg: var(--confidence-inf-bg);
+  --color-confidence-spec: var(--confidence-spec);
+  --color-confidence-spec-bg: var(--confidence-spec-bg);
+  --font-display: var(--font-playfair);
+  --font-body: var(--font-inter);
 }
 
 body {
