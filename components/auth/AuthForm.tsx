@@ -10,11 +10,24 @@ interface AuthFormProps {
   mode: AuthMode;
 }
 
+const SAFE_NEXT = /^\/(?!\/)/;
+
+function getNextParam(): string {
+  if (typeof window === "undefined") return "/dashboard";
+  const params = new URLSearchParams(window.location.search);
+  const raw = params.get("next") ?? "";
+  return SAFE_NEXT.test(raw) ? raw : "/dashboard";
+}
+
 export function AuthForm({ mode }: AuthFormProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [oauthLoading, setOauthLoading] = useState<"google" | "apple" | null>(
+    null
+  );
 
   const siteUrl =
     typeof window !== "undefined"
@@ -24,17 +37,27 @@ export function AuthForm({ mode }: AuthFormProps) {
   async function handleOAuth(provider: "google" | "apple") {
     const supabase = createClient();
     setError(null);
+    setMessage(null);
+    setOauthLoading(provider);
+    const next = getNextParam();
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
-      options: { redirectTo: `${siteUrl}/dashboard` },
+      options: {
+        redirectTo: `${siteUrl}/auth/callback?next=${encodeURIComponent(next)}`,
+      },
     });
-    if (error) setError(error.message);
+    if (error) {
+      setError(error.message);
+      setOauthLoading(null);
+    }
+    // On success the browser navigates away; no need to clear oauthLoading.
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const supabase = createClient();
     setError(null);
+    setMessage(null);
     setLoading(true);
     try {
       const result =
@@ -45,11 +68,9 @@ export function AuthForm({ mode }: AuthFormProps) {
       if (result.error) {
         setError(result.error.message);
       } else if (mode === "signup") {
-        setError(
-          "Check your email to confirm your account before signing in."
-        );
+        setMessage("Check your email to confirm your account before signing in.");
       } else {
-        window.location.href = "/dashboard";
+        window.location.href = getNextParam();
       }
     } finally {
       setLoading(false);
@@ -69,19 +90,21 @@ export function AuthForm({ mode }: AuthFormProps) {
         <button
           type="button"
           onClick={() => handleOAuth("google")}
-          className="w-full flex items-center justify-center gap-3 py-3 px-4 bg-surface border border-border rounded-lg text-ink font-body text-sm font-medium hover:bg-card transition-colors"
+          disabled={oauthLoading !== null || loading}
+          className="w-full flex items-center justify-center gap-3 py-3 px-4 bg-surface border border-border rounded-lg text-ink font-body text-sm font-medium hover:bg-card transition-colors disabled:opacity-60"
         >
           <GoogleIcon />
-          Continue with Google
+          {oauthLoading === "google" ? "Please wait…" : "Continue with Google"}
         </button>
 
         <button
           type="button"
           onClick={() => handleOAuth("apple")}
-          className="w-full flex items-center justify-center gap-3 py-3 px-4 bg-surface border border-border rounded-lg text-ink font-body text-sm font-medium hover:bg-card transition-colors"
+          disabled={oauthLoading !== null || loading}
+          className="w-full flex items-center justify-center gap-3 py-3 px-4 bg-surface border border-border rounded-lg text-ink font-body text-sm font-medium hover:bg-card transition-colors disabled:opacity-60"
         >
           <AppleIcon />
-          Continue with Apple
+          {oauthLoading === "apple" ? "Please wait…" : "Continue with Apple"}
         </button>
       </div>
 
@@ -102,6 +125,7 @@ export function AuthForm({ mode }: AuthFormProps) {
             id="email"
             type="email"
             placeholder="Email"
+            autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -117,6 +141,7 @@ export function AuthForm({ mode }: AuthFormProps) {
             id="password"
             type="password"
             placeholder="Password"
+            autoComplete={isSignup ? "new-password" : "current-password"}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -124,15 +149,21 @@ export function AuthForm({ mode }: AuthFormProps) {
           />
         </div>
 
+        {message && (
+          <p className="text-sm font-body text-confidence-inf bg-confidence-inf-bg px-3 py-2 rounded-lg">
+            {message}
+          </p>
+        )}
+
         {error && (
-          <p className="text-sm font-body text-[#B26A1B] bg-[#F7ECDC] px-3 py-2 rounded-lg">
+          <p className="text-sm font-body text-red-600 bg-red-50 px-3 py-2 rounded-lg">
             {error}
           </p>
         )}
 
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || oauthLoading !== null}
           className="w-full py-3 bg-gold text-surface font-body font-semibold text-sm rounded-lg hover:bg-gold-dark transition-colors disabled:opacity-60"
         >
           {loading ? "Please wait…" : isSignup ? "Create account" : "Sign in"}

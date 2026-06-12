@@ -9,10 +9,15 @@ export async function createClient() {
     {
       cookies: {
         getAll: () => store.getAll(),
-        setAll: (all) =>
-          all.forEach(({ name, value, options }) =>
-            store.set(name, value, options)
-          ),
+        setAll: (all) => {
+          try {
+            all.forEach(({ name, value, options }) =>
+              store.set(name, value, options)
+            );
+          } catch {
+            // Cookie writes are illegal during RSC render; the proxy handles session refresh.
+          }
+        },
       },
     }
   );
