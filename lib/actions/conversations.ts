@@ -90,6 +90,7 @@ export async function saveConversation(
   input: SaveConversationInput
 ): Promise<SaveConversationResult> {
   // ── Input validation (dependency-free) ──────────────────────────────────────
+  if (input == null || typeof input !== "object") return { ok: false, reason: "invalid-input" };
   const title =
     input.title == null ? "" : String(input.title).slice(0, 500);
   const figureSlug = typeof input.figureSlug === "string" ? input.figureSlug : "";
@@ -101,6 +102,7 @@ export async function saveConversation(
     return { ok: false, reason: "invalid-input" };
   }
   for (const m of messages) {
+    if (m == null || typeof m !== "object") return { ok: false, reason: "invalid-input" };
     if (m.role !== "user" && m.role !== "figure") {
       return { ok: false, reason: "invalid-input" };
     }

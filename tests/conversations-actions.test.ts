@@ -247,6 +247,22 @@ test("messages insert failure rolls back the conversation shell", async () => {
   expect(inserts.deletes).toContain("conv-1");
 });
 
+test("null input is rejected with invalid-input", async () => {
+  mockSupabase({ tier: "free", savedCount: 0 });
+  const res = await saveConversation(null as never);
+  expect(res).toEqual({ ok: false, reason: "invalid-input" });
+});
+
+test("null message in array is rejected with invalid-input", async () => {
+  mockSupabase({ tier: "free", savedCount: 0 });
+  const res = await saveConversation({
+    figureSlug: "martin-luther-king",
+    title: "t",
+    messages: [null] as never,
+  });
+  expect(res).toEqual({ ok: false, reason: "invalid-input" });
+});
+
 test("201 messages is rejected with invalid-input", async () => {
   mockSupabase({ tier: "free", savedCount: 0 });
   const tooMany = Array.from({ length: 201 }, (_, i) => ({
