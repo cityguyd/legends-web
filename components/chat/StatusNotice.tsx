@@ -5,9 +5,9 @@ import type { ChatStatus } from "@/lib/chat/useChatStream";
 /**
  * Maps non-happy-path chat statuses to inline notices.
  *
- * Seam for Task 14: limit/blocked notices here will be replaced by the
- * upgrade/sign-up modals — swap the branches below for modal triggers
- * without touching ChatThread.
+ * Handles error and blocked statuses only.
+ * Limited status is handled exclusively by LimitModal — this component
+ * intentionally renders nothing for it.
  */
 export function StatusNotice({
   status,
@@ -30,17 +30,6 @@ export function StatusNotice({
         >
           Try again
         </button>
-      </div>
-    );
-  }
-
-  if (typeof status === "object" && status.kind === "limited") {
-    return (
-      <div
-        role="alert"
-        className="rounded-lg border border-gold/40 bg-bubble px-4 py-3 text-sm text-ink"
-      >
-        {status.detail}
       </div>
     );
   }

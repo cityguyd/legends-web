@@ -21,17 +21,14 @@ test("error branch shows 'Try again' button and fires retry callback", () => {
   expect(retry).toHaveBeenCalledTimes(1);
 });
 
-test("limited status shows detail text", () => {
-  render(
+test("limited status renders nothing (LimitModal owns that moment)", () => {
+  const { container } = render(
     <StatusNotice
       status={{ kind: "limited", detail: "You have used all 5 free questions." }}
       onRetry={noop}
     />
   );
-  expect(screen.getByRole("alert")).toBeInTheDocument();
-  expect(
-    screen.getByText("You have used all 5 free questions.")
-  ).toBeInTheDocument();
+  expect(container.firstChild).toBeNull();
 });
 
 test("blocked status shows message", () => {

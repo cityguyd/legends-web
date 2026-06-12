@@ -126,7 +126,7 @@ export function ChatThread({
             )}
 
             {status === "consulting" && <ConsultingIndicator />}
-            {/* Task 14: limited status opens LimitModal instead of inline notice */}
+            {/* limited status opens LimitModal; StatusNotice handles error/blocked only */}
             <StatusNotice status={status} onRetry={retry} />
           </div>
         </div>
