@@ -90,12 +90,15 @@ export function Sidebar({
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
+  const hasOpenedRef = useRef(false);
 
   // Move focus to close button when drawer opens; return to trigger on close.
+  // hasOpenedRef guards against stealing focus on initial mount (open === false).
   useEffect(() => {
     if (open) {
+      hasOpenedRef.current = true;
       closeRef.current?.focus();
-    } else {
+    } else if (hasOpenedRef.current) {
       triggerRef.current?.focus();
     }
   }, [open]);
