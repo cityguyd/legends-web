@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback, startTransition } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useChatStream } from "@/lib/chat/useChatStream";
 import { Composer } from "./Composer";
 import { ConsultingIndicator } from "./ConsultingIndicator";
 import { FigureHeader, type FigureHeaderFigure, type VoiceMode } from "./FigureHeader";
 import { ResponseCard } from "./ResponseCard";
+import { CopyToast } from "./CopyToast";
 import { StatusNotice } from "./StatusNotice";
 import { LimitModal } from "./LimitModal";
 
@@ -34,17 +35,16 @@ export function ChatThread({
     voiceMode,
   });
 
-  // LimitModal state — opened when status becomes {kind:"limited"}
-  const [limitModalOpen, setLimitModalOpen] = useState(false);
+  // Derived LimitModal state — open whenever status is "limited" and the user
+  // hasn't dismissed that specific status object yet.
+  const [dismissed, setDismissed] = useState<unknown>(null);
+  const limitOpen =
+    typeof status === "object" &&
+    status.kind === "limited" &&
+    status !== dismissed;
 
-  // Open the limit modal whenever the stream reports a limit hit.
-  // startTransition defers the setState call out of the synchronous effect body,
-  // satisfying the react-hooks/set-state-in-effect lint rule.
-  useEffect(() => {
-    if (typeof status === "object" && status.kind === "limited") {
-      startTransition(() => setLimitModalOpen(true));
-    }
-  }, [status]);
+  // Toast state hoisted here so ONE CopyToast covers all ResponseCards.
+  const [toastVisible, setToastVisible] = useState(false);
 
   // Auto-scroll: only when the user is "pinned" to the bottom.
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -72,7 +72,7 @@ export function ChatThread({
 
   // TODO(task-16): replace with real pro detection from Stripe subscription
   // For now: anonymous users are "anonymous", signed-in are "free".
-  const copyTier = isSignedIn ? "free" : "anonymous";
+  const copyTier = isSignedIn ? ("free" as const) : ("anonymous" as const);
 
   // Determine which limit modal kind to show based on auth state.
   const limitModalKind = isSignedIn ? "free-daily" : "anon-daily";
@@ -121,7 +121,12 @@ export function ChatThread({
                   {message.text}
                 </div>
               ) : (
-                <ResponseCard key={index} message={message} tier={copyTier} />
+                <ResponseCard
+                  key={index}
+                  message={message}
+                  tier={copyTier}
+                  onCopied={() => setToastVisible(true)}
+                />
               )
             )}
 
@@ -139,10 +144,16 @@ export function ChatThread({
         />
       </div>
 
+      {/* Single toast for all ResponseCards in this thread */}
+      <CopyToast
+        visible={toastVisible}
+        onDismiss={() => setToastVisible(false)}
+      />
+
       <LimitModal
         kind={limitModalKind}
-        open={limitModalOpen}
-        onClose={() => setLimitModalOpen(false)}
+        open={limitOpen}
+        onClose={() => setDismissed(status)}
       />
     </>
   );

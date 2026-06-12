@@ -13,6 +13,39 @@ interface LimitModalProps {
   onNotifySubmit?: (email: string) => void;
 }
 
+// ── Data-driven upsell content ────────────────────────────────────────────────
+
+interface UpsellContent {
+  heading: string;
+  body: string;
+  ctaLabel: string;
+  ctaHref: string;
+}
+
+const UPSELL_CONTENT: Record<Exclude<LimitModalKind, "notify">, UpsellContent> =
+  {
+    "anon-daily": {
+      heading: "You’ve used your 3 free questions today",
+      body: "Create a free account and get 6 questions a day, plus save your conversations.",
+      ctaLabel: "Sign Up Free",
+      ctaHref: "/signup",
+    },
+    "free-daily": {
+      heading: "You’ve reached today’s limit",
+      body: "Upgrade to Premium for unlimited questions (fair use), clean copy, and PDF export.",
+      ctaLabel: "Go Premium — $7/month",
+      ctaHref: "/pricing",
+    },
+    "save-cap": {
+      heading: "You’ve used all 5 saved conversations",
+      body: "Free accounts get up to 5 slots. Upgrade to Premium for unlimited saves.",
+      ctaLabel: "Go Premium",
+      ctaHref: "/pricing",
+    },
+  };
+
+// ── Inner content ─────────────────────────────────────────────────────────────
+
 function ModalContent({
   kind,
   onClose,
@@ -27,30 +60,28 @@ function ModalContent({
 
   function handleNotify(e: React.FormEvent) {
     e.preventDefault();
-    // TODO: wire to a notify_signups server action when it exists
     onNotifySubmit?.(notifyEmail);
     setNotifyDone(true);
   }
 
-  if (kind === "anon-daily") {
+  // Data-driven upsell path (anon-daily, free-daily, save-cap)
+  if (kind !== "notify") {
+    const { heading, body, ctaLabel, ctaHref } = UPSELL_CONTENT[kind];
     return (
       <>
         <h2
           id="limit-modal-heading"
           className="font-display text-2xl font-bold text-ink"
         >
-          You&apos;ve used your 3 free questions today
+          {heading}
         </h2>
-        <p className="mt-3 text-sm leading-relaxed text-sub">
-          Create a free account and get 6 questions a day, plus save your
-          conversations.
-        </p>
+        <p className="mt-3 text-sm leading-relaxed text-sub">{body}</p>
         <div className="mt-6 flex flex-col gap-3">
           <Link
-            href="/signup"
+            href={ctaHref}
             className="rounded-lg bg-gold px-5 py-2.5 text-center text-sm font-semibold text-white transition-colors hover:bg-gold-dark"
           >
-            Sign Up Free
+            {ctaLabel}
           </Link>
           <button
             type="button"
@@ -64,71 +95,7 @@ function ModalContent({
     );
   }
 
-  if (kind === "free-daily") {
-    return (
-      <>
-        <h2
-          id="limit-modal-heading"
-          className="font-display text-2xl font-bold text-ink"
-        >
-          You&apos;ve reached today&apos;s limit
-        </h2>
-        <p className="mt-3 text-sm leading-relaxed text-sub">
-          Upgrade to Premium for unlimited questions (fair use), clean copy, and
-          PDF export.
-        </p>
-        <div className="mt-6 flex flex-col gap-3">
-          <Link
-            href="/pricing"
-            className="rounded-lg bg-gold px-5 py-2.5 text-center text-sm font-semibold text-white transition-colors hover:bg-gold-dark"
-          >
-            Go Premium — $7/month
-          </Link>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-lg border border-border bg-surface px-5 py-2.5 text-sm font-semibold text-sub transition-colors hover:bg-card"
-          >
-            Maybe later
-          </button>
-        </div>
-      </>
-    );
-  }
-
-  if (kind === "save-cap") {
-    return (
-      <>
-        <h2
-          id="limit-modal-heading"
-          className="font-display text-2xl font-bold text-ink"
-        >
-          You&apos;ve used all 5 saved conversations
-        </h2>
-        <p className="mt-3 text-sm leading-relaxed text-sub">
-          Free accounts get up to 5 slots. Upgrade to Premium for unlimited
-          saves.
-        </p>
-        <div className="mt-6 flex flex-col gap-3">
-          <Link
-            href="/pricing"
-            className="rounded-lg bg-gold px-5 py-2.5 text-center text-sm font-semibold text-white transition-colors hover:bg-gold-dark"
-          >
-            Go Premium
-          </Link>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-lg border border-border bg-surface px-5 py-2.5 text-sm font-semibold text-sub transition-colors hover:bg-card"
-          >
-            Maybe later
-          </button>
-        </div>
-      </>
-    );
-  }
-
-  // kind === "notify"
+  // Notify success state
   if (notifyDone) {
     return (
       <>
@@ -152,6 +119,7 @@ function ModalContent({
     );
   }
 
+  // Notify form
   return (
     <>
       <h2
@@ -190,74 +158,86 @@ function ModalContent({
   );
 }
 
+// ── LimitModal (native <dialog>) ──────────────────────────────────────────────
+
 export function LimitModal({
   kind,
   open,
   onClose,
   onNotifySubmit,
 }: LimitModalProps) {
-  const closeButtonRef = useRef<HTMLButtonElement>(null);
-  const hasOpenedRef = useRef(false);
-  const previousFocusRef = useRef<HTMLElement | null>(null);
+  const dialogRef = useRef<HTMLDialogElement>(null);
 
-  // Save & restore focus; guard against stealing focus on initial mount.
+  // Sync open prop → showModal / close
   useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+
     if (open) {
-      previousFocusRef.current = document.activeElement as HTMLElement;
-      hasOpenedRef.current = true;
-      // Focus the close button after paint.
-      requestAnimationFrame(() => closeButtonRef.current?.focus());
-    } else if (hasOpenedRef.current) {
-      previousFocusRef.current?.focus();
+      // jsdom guard: jsdom doesn't implement showModal
+      if (typeof dialog.showModal === "function") {
+        dialog.showModal();
+      } else {
+        dialog.setAttribute("open", "");
+      }
+    } else {
+      // jsdom guard: jsdom doesn't implement close()
+      if (typeof dialog.close === "function") {
+        dialog.close();
+      } else {
+        dialog.removeAttribute("open");
+      }
     }
   }, [open]);
 
-  // Escape closes the modal.
+  // Native cancel event (Escape key in real browsers) → onClose
   useEffect(() => {
-    if (!open) return;
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    const handleCancel = (e: Event) => {
+      e.preventDefault(); // prevent auto-close so we control it
+      onClose();
     };
-    document.addEventListener("keydown", handler);
-    return () => document.removeEventListener("keydown", handler);
-  }, [open, onClose]);
+    const handleClose = () => {
+      onClose();
+    };
+    dialog.addEventListener("cancel", handleCancel);
+    dialog.addEventListener("close", handleClose);
+    return () => {
+      dialog.removeEventListener("cancel", handleCancel);
+      dialog.removeEventListener("close", handleClose);
+    };
+  }, [onClose]);
 
-  if (!open) return null;
+  // Backdrop click (click directly on the <dialog> element) → close
+  function handleDialogClick(e: React.MouseEvent<HTMLDialogElement>) {
+    if (e.target === dialogRef.current) {
+      onClose();
+    }
+  }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Scrim */}
+    <dialog
+      ref={dialogRef}
+      aria-labelledby="limit-modal-heading"
+      onClick={handleDialogClick}
+      className="mx-4 w-full max-w-md rounded-2xl border border-border bg-surface p-8 shadow-xl backdrop:bg-transparent open:flex open:flex-col"
+    >
+      {/* Close button */}
       <button
         type="button"
         aria-label="Close"
         onClick={onClose}
-        className="absolute inset-0 bg-ink/40"
-      />
-
-      {/* Dialog card */}
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="limit-modal-heading"
-        className="relative z-10 mx-4 w-full max-w-sm rounded-2xl border border-border bg-surface p-6 shadow-xl"
+        className="absolute right-4 top-4 rounded-md border border-border bg-surface p-1 text-sub hover:text-ink"
       >
-        {/* Close button */}
-        <button
-          ref={closeButtonRef}
-          type="button"
-          aria-label="Close"
-          onClick={onClose}
-          className="absolute right-4 top-4 rounded-md border border-border bg-surface p-1 text-sub hover:text-ink"
-        >
-          ✕
-        </button>
+        ✕
+      </button>
 
-        <ModalContent
-          kind={kind}
-          onClose={onClose}
-          onNotifySubmit={onNotifySubmit}
-        />
-      </div>
-    </div>
+      <ModalContent
+        kind={kind}
+        onClose={onClose}
+        onNotifySubmit={onNotifySubmit}
+      />
+    </dialog>
   );
 }

@@ -46,3 +46,7 @@ body {
   color: var(--ink);
   font-family: var(--font-body), system-ui, sans-serif;
 }
+
+dialog::backdrop {
+  background: rgb(42 33 24 / 0.4);
+}
