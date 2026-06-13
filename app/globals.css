@@ -50,3 +50,11 @@ body {
 dialog::backdrop {
   background: rgb(42 33 24 / 0.4);
 }
+
+/* Ornamental gold section divider */
+.divider-gold {
+  border: none;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--gold), transparent);
+  margin: 0;
+}

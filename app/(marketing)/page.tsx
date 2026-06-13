@@ -101,6 +101,8 @@ export default function HomePage() {
         </ul>
       </section>
 
+      <hr className="divider-gold" />
+
       {/* Trending strip */}
       <section className="border-t border-border bg-surface">
         <div className="mx-auto max-w-6xl px-6 py-10">
@@ -121,6 +123,8 @@ export default function HomePage() {
           </ul>
         </div>
       </section>
+
+      <hr className="divider-gold" />
 
       {/* Trust strip */}
       <section className="border-t border-border bg-card">
