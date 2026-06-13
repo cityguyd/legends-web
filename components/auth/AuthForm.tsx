@@ -188,7 +188,7 @@ export function AuthForm({ mode }: AuthFormProps) {
           disabled={loading || oauthLoading !== null}
           className="w-full py-3 bg-gold text-surface font-body font-semibold text-sm rounded-lg hover:bg-gold-dark transition-colors disabled:opacity-60"
         >
-          {loading ? "Please wait…" : isSignup ? "Create Free Account" : "Sign in"}
+          {loading ? "Please wait…" : isSignup ? "Create Free Account" : "Log In"}
         </button>
       </form>
 
@@ -213,7 +213,7 @@ export function AuthForm({ mode }: AuthFormProps) {
           <>
             Already have an account?{" "}
             <Link href="/login" className="text-gold hover:underline">
-              Sign in
+              Log in
             </Link>
           </>
         ) : (
