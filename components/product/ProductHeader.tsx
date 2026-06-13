@@ -4,6 +4,8 @@ const navLinks = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/conversations", label: "Conversations" },
   { href: "/figures", label: "Figures" },
+  { href: "/questions", label: "Hot Questions" },
+  { href: "/sources", label: "Sources" },
   { href: "/account", label: "Account" },
 ];
 
