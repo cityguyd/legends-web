@@ -5,7 +5,10 @@ const navLinks = [
   { href: "/", label: "Home" },
   { href: "/figures", label: "Figures" },
   { href: "/how-it-works", label: "How it Works" },
-  { href: "/about", label: "About" },
+  { href: "/debates", label: "Debates" },
+  { href: "/council", label: "Council" },
+  { href: "/questions", label: "Hot Questions" },
+  { href: "/sources", label: "Sources" },
   { href: "/pricing", label: "Pricing" },
 ];
 
@@ -75,21 +78,13 @@ export default function MarketingLayout({
             <div>
               <p className="text-sm font-semibold text-ink">Product</p>
               <ul className="mt-3 space-y-2 text-sm text-sub">
-                <li>
-                  <Link href="/figures" className="hover:text-gold-dark">
-                    Figures
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/how-it-works" className="hover:text-gold-dark">
-                    How it Works
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/pricing" className="hover:text-gold-dark">
-                    Pricing
-                  </Link>
-                </li>
+                <li><Link href="/figures" className="hover:text-gold-dark">Figures</Link></li>
+                <li><Link href="/how-it-works" className="hover:text-gold-dark">How it Works</Link></li>
+                <li><Link href="/debates" className="hover:text-gold-dark">Debates</Link></li>
+                <li><Link href="/council" className="hover:text-gold-dark">Council</Link></li>
+                <li><Link href="/questions" className="hover:text-gold-dark">Hot Questions</Link></li>
+                <li><Link href="/sources" className="hover:text-gold-dark">Sources</Link></li>
+                <li><Link href="/pricing" className="hover:text-gold-dark">Pricing</Link></li>
               </ul>
             </div>
             <div>
@@ -120,6 +115,7 @@ export default function MarketingLayout({
                     Disclaimer
                   </Link>
                 </li>
+                <li><a href="mailto:support@legendslibrary.ai" className="hover:text-gold-dark">Support</a></li>
               </ul>
             </div>
           </div>
