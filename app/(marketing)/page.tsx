@@ -1,15 +1,13 @@
 import Link from "next/link";
-import { getFeaturedQuestions } from "@/lib/marketing/data";
+import {
+  FEATURED_CARDS,
+  TRENDING_QUESTIONS,
+  cardHref,
+} from "@/lib/marketing/homeCards";
 
 export const revalidate = 3600;
 
-const FEATURED_COUNT = 5;
-
-export default async function HomePage() {
-  const questions = await getFeaturedQuestions();
-  const featured = questions.slice(0, FEATURED_COUNT);
-  const trending = questions.slice(FEATURED_COUNT, FEATURED_COUNT + 5);
-
+export default function HomePage() {
   return (
     <>
       {/* Hero */}
@@ -22,22 +20,22 @@ export default async function HomePage() {
             Hot takes, cold sources.
           </p>
           <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-sub">
-            Ask the biggest questions of today. Get the takes of history&apos;s
-            greatest minds. Backed by their{" "}
-            <em className="text-ink">real words</em>, not guesswork.
+            Ask history&apos;s greatest minds about today&apos;s most
+            controversial issues. Get bold answers backed by the words they left
+            behind.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
             <Link
               href="/figures"
               className="rounded-lg bg-gold px-6 py-3 font-semibold text-white transition-colors hover:bg-gold-dark"
             >
-              Ask a Question →
+              Ask a Bold Question →
             </Link>
             <Link
               href="/how-it-works"
               className="rounded-lg border border-border bg-surface px-6 py-3 font-semibold text-ink transition-colors hover:border-gold"
             >
-              How it Works
+              How It Works
             </Link>
           </div>
         </div>
@@ -51,7 +49,7 @@ export default async function HomePage() {
               Featured Hot Takes
             </h2>
             <p className="mt-1 text-sub">
-              Big questions. Bold perspectives. See what they&apos;d really say.
+              Big questions. Bold answers. Receipts included.
             </p>
           </div>
           <Link
@@ -62,69 +60,60 @@ export default async function HomePage() {
           </Link>
         </div>
 
-        {featured.length === 0 ? (
-          <p className="mt-8 rounded-xl border border-border bg-surface p-8 text-center text-sub">
-            Featured questions are on their way. Check back soon.
-          </p>
-        ) : (
-          <ul className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-            {featured.map((q) => (
-              <li
-                key={q.slug}
-                className="flex flex-col rounded-xl border border-border bg-surface p-5 shadow-sm"
-              >
-                <h3 className="font-display text-lg font-bold leading-snug text-ink">
-                  {q.question}
-                </h3>
-                {q.subtitle && (
-                  <p className="mt-2 text-sm italic text-sub">{q.subtitle}</p>
-                )}
-                {q.figure_name && (
-                  <p className="mt-2 text-xs font-medium uppercase tracking-wide text-gold-dark">
-                    {q.figure_name}
-                  </p>
-                )}
-                <div className="mt-auto pt-4">
-                  <Link
-                    href={`/questions/${q.slug}`}
-                    className="text-sm font-semibold text-gold-dark hover:underline"
-                  >
-                    View Analysis →
-                  </Link>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
+        <ul className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {FEATURED_CARDS.map((card) => (
+            <li
+              key={card.question}
+              className="flex flex-col rounded-xl border border-border bg-surface p-5 shadow-sm"
+            >
+              <h3 className="font-display text-lg font-bold leading-snug text-ink">
+                {card.question}
+              </h3>
+              <p className="mt-2 text-xs font-medium uppercase tracking-wide text-gold-dark">
+                {card.meta}
+              </p>
+              <div className="mt-auto pt-4">
+                <Link
+                  href={cardHref(card)}
+                  className="text-sm font-semibold text-gold-dark hover:underline"
+                >
+                  {card.live ? `Ask ${card.figureShort} →` : "Notify Me →"}
+                </Link>
+              </div>
+            </li>
+          ))}
+        </ul>
       </section>
 
       {/* Trending strip */}
       <section className="border-t border-border bg-surface">
         <div className="mx-auto max-w-6xl px-6 py-10">
           <h2 className="font-display text-xl font-bold text-ink">
-            Trending Questions
+            Hottest Questions Right Now
           </h2>
-          <p className="mt-1 text-sm text-sub">
-            The questions everyone&apos;s asking right now.
+          <ul className="mt-4 flex flex-wrap gap-3">
+            {TRENDING_QUESTIONS.map((t) => (
+              <li key={t.question}>
+                <Link
+                  href={cardHref(t)}
+                  className="inline-block rounded-full border border-border bg-card px-4 py-2 text-sm text-ink transition-colors hover:border-gold"
+                >
+                  {t.question}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      {/* Trust strip */}
+      <section className="border-t border-border bg-card">
+        <div className="mx-auto max-w-4xl px-6 py-10 text-center">
+          <p className="text-sm font-semibold text-ink">Every answer includes:</p>
+          <p className="mt-2 text-sm text-sub">
+            Primary-source citations · Confidence label · Evidence vs. inference
+            notes
           </p>
-          {trending.length === 0 ? (
-            <p className="mt-4 text-sm text-sub">
-              Nothing trending yet — be the first to ask.
-            </p>
-          ) : (
-            <ul className="mt-4 flex flex-wrap gap-3">
-              {trending.map((q) => (
-                <li key={q.slug}>
-                  <Link
-                    href={`/questions/${q.slug}`}
-                    className="inline-block rounded-full border border-border bg-card px-4 py-2 text-sm text-ink transition-colors hover:border-gold"
-                  >
-                    {q.question}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
         </div>
       </section>
     </>
