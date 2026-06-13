@@ -36,7 +36,7 @@ export function Composer({
           type="text"
           value={value}
           onChange={(event) => setValue(event.target.value)}
-          placeholder="Ask your question…"
+          placeholder="Ask a bold question…"
           aria-label="Your question"
           aria-describedby={remainingLabel ? "composer-remaining" : undefined}
           className="min-w-0 flex-1 rounded-full border border-border bg-bg px-4 py-2.5 text-sm text-ink placeholder:text-sub/70 focus:outline-none focus:ring-2 focus:ring-gold/50"
@@ -54,6 +54,9 @@ export function Composer({
           {remainingLabel}
         </p>
       )}
+      <p className="mx-auto mt-2 max-w-3xl px-1 text-xs text-sub/80">
+        Answers are AI reconstructions grounded in primary sources.
+      </p>
     </form>
   );
 }

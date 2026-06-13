@@ -3,6 +3,7 @@
 import { useCallback } from "react";
 import { EvidenceRow, type EvidenceCitation } from "./EvidenceRow";
 import { withAttribution, type CopyTier } from "@/lib/chat/copyAttribution";
+import { confidenceLabel } from "./ConfidenceBadge";
 
 export type { CopyTier };
 
@@ -57,6 +58,24 @@ export function ResponseCard({
           </span>
         )}
       </header>
+      <p className="mt-1 text-xs text-sub">
+        AI reconstruction · Primary-source grounded
+        {message.confidence && confidenceLabel(message.confidence)
+          ? ` · Confidence: ${confidenceLabel(message.confidence)}`
+          : ""}
+      </p>
+
+      <details className="mt-1 text-xs text-sub">
+        <summary className="cursor-pointer hover:text-gold-dark">
+          What does this mean?
+        </summary>
+        <p className="mt-1">
+          {message.figureName
+            ? `This is not a real statement by ${message.figureName}. `
+            : "This is not a real statement by the figure. "}
+          It is an AI-generated interpretation based on cited source material.
+        </p>
+      </details>
       <p className="mt-2 whitespace-pre-wrap leading-relaxed text-ink">
         {message.text}
       </p>

@@ -42,9 +42,21 @@ export function EvidenceRow({
   if (!hasBadge && chips.length === 0) return null;
 
   const open = expanded !== null ? chips.find((c) => c.index === expanded) : undefined;
+  const isLowConfidence = confidence === "refused";
 
   return (
     <div className="mt-3 border-t border-border pt-3">
+      {(hasBadge || chips.length > 0) && (
+        <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gold-dark">
+          Receipts
+        </p>
+      )}
+      {isLowConfidence && (
+        <p className="mb-2 rounded-lg border-l-2 border-confidence-spec bg-confidence-spec-bg/40 px-3 py-2 text-xs text-sub">
+          The source record is limited here, so this answer involves more
+          interpretation than direct evidence.
+        </p>
+      )}
       <div className="flex flex-wrap items-center gap-2">
         {hasBadge && confidence && <ConfidenceBadge tier={confidence} />}
         {chips.map(({ citation, label, index }) => (
