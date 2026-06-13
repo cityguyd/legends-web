@@ -104,15 +104,23 @@ export default async function FiguresPage({
   return (
     <>
       {/* Hero */}
-      <section className="border-b border-border bg-card">
-        <div className="mx-auto max-w-3xl px-6 py-16 text-center">
-          <h1 className="font-display text-5xl font-bold text-ink">
+      <section
+        className="relative border-b border-border"
+        style={{
+          backgroundImage: "url('/images/meet-the-minds.png')",
+          backgroundSize: "cover",
+          backgroundPosition: "center 20%",
+        }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-black/50" />
+        <div className="relative mx-auto max-w-3xl px-6 py-20 text-center">
+          <h1 className="font-display text-5xl font-bold text-white drop-shadow-lg">
             Meet the Minds
           </h1>
-          <p className="mt-3 font-display text-lg italic text-gold-dark">
+          <p className="mt-3 font-display text-lg italic text-amber-200 drop-shadow">
             Where history&apos;s biggest names meet today&apos;s biggest arguments.
           </p>
-          <p className="mx-auto mt-5 max-w-xl text-sub">
+          <p className="mx-auto mt-5 max-w-xl text-white/85 drop-shadow">
             Explore the figures whose ideas built movements, nations,
             revolutions, and controversies. Ask them anything — and get
             answers grounded in primary sources.
