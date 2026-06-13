@@ -9,9 +9,9 @@ test("anonymous limit modal sells free signup", () => {
   expect(screen.getByText(/6 questions a day/i)).toBeInTheDocument();
 });
 
-test("free limit modal sells premium at $7", () => {
+test("free limit modal sells premium at $5", () => {
   render(<LimitModal kind="free-daily" open onClose={() => {}} />);
-  expect(screen.getByText(/\$7\/month/i)).toBeInTheDocument();
+  expect(screen.getByText(/\$5\/month/i)).toBeInTheDocument();
 });
 
 test("save cap modal blocks save and upsells", () => {
