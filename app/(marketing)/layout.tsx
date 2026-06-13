@@ -19,12 +19,29 @@ export default function MarketingLayout({
     <div className="flex min-h-screen flex-col bg-bg text-ink">
       <header className="sticky top-0 z-40 border-b border-border bg-surface/95 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-6 px-6 py-3">
-          <Link href="/" className="flex flex-col">
-            <span className="font-display text-xl font-bold text-ink">
-              Legends Library
-            </span>
-            <span className="text-xs italic text-gold-dark">
-              Hot takes, cold sources.
+          <Link href="/" className="flex items-center gap-2.5">
+            <svg
+              width="28"
+              height="32"
+              viewBox="0 0 28 32"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
+            >
+              <polygon points="14,1 27,8 1,8" fill="#D59E3C" />
+              <rect x="3" y="9" width="4" height="17" rx="1" fill="#D59E3C" />
+              <rect x="12" y="9" width="4" height="17" rx="1" fill="#D59E3C" />
+              <rect x="21" y="9" width="4" height="17" rx="1" fill="#D59E3C" />
+              <rect x="1" y="26" width="26" height="3" rx="1" fill="#D59E3C" />
+              <rect x="0" y="29" width="28" height="3" rx="1" fill="#99700F" />
+            </svg>
+            <span className="flex flex-col">
+              <span className="font-display text-xl font-bold text-ink leading-tight">
+                Legends Library
+              </span>
+              <span className="text-xs italic text-gold-dark leading-tight">
+                Hot takes, cold sources.
+              </span>
             </span>
           </Link>
 
