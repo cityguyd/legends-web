@@ -9,25 +9,25 @@ export const metadata = {
 };
 
 const timelessQuestions = [
-  "How should power be used?",
-  "What makes a just society?",
-  "What is freedom?",
-  "When is war justified?",
-  "How should technology change our lives?",
+  "What makes a society just?",
+  "When should power be resisted?",
+  "What does freedom actually require?",
+  "How should people live when the world feels unstable?",
+  "Which ideas are worth defending — and which ones should be challenged?",
 ];
 
 const pillars = [
   {
     title: "Evidence First",
-    body: "Every answer begins with primary sources.",
+    body: "Every answer starts from a source library, not a personality prompt. Speeches, letters, books, interviews, essays, and verified writings come before the AI take.",
   },
   {
     title: "Intellectual Honesty",
-    body: "We separate evidence from inference.",
+    body: "Some answers are direct. Others are inferred. Legends Library is built to show the difference with citations, confidence labels, and evidence notes.",
   },
   {
     title: "Multiple Perspectives",
-    body: "History rarely speaks with one voice.",
+    body: "History rarely speaks with one voice. Council and Debate modes are designed to show disagreement, contrast, and tension — not flatten every figure into the same modern opinion.",
   },
 ];
 
@@ -45,6 +45,15 @@ export default function AboutPage() {
             <br />
             We just forgot how to listen.
           </p>
+          <p className="mx-auto mt-6 max-w-2xl text-lg text-sub">
+            Legends Library lets you ask history&apos;s most influential figures
+            about the questions people are still fighting over today — power,
+            race, money, war, faith, freedom, technology, and the future.
+          </p>
+          <p className="mx-auto mt-4 max-w-2xl text-lg text-sub">
+            We are not building fake historical roleplay. We are building the
+            most entertaining way to argue with primary sources.
+          </p>
         </div>
       </section>
 
@@ -54,10 +63,7 @@ export default function AboutPage() {
           Why We Built This
         </h2>
         <p className="mx-auto mt-5 max-w-2xl leading-relaxed text-sub">
-          Most people encounter history as a collection of dates, names, and
-          events. We think history is far more interesting than that. The
-          people who shaped the world wrestled with many of the same questions
-          we face today:
+          Every generation asks the same kinds of questions:
         </p>
         <ul className="mt-8 flex flex-wrap justify-center gap-3">
           {timelessQuestions.map((q) => (
@@ -70,8 +76,8 @@ export default function AboutPage() {
           ))}
         </ul>
         <p className="mt-8 text-sub">
-          Legends Library exists to reconnect modern questions with historical
-          wisdom.
+          Legends Library brings those questions back into conversation with the
+          people whose words shaped history.
         </p>
       </section>
 
@@ -94,10 +100,9 @@ export default function AboutPage() {
 
           <blockquote className="mx-auto mt-14 max-w-2xl rounded-xl border border-border bg-card px-8 py-10 text-center">
             <p className="font-display text-2xl font-bold leading-snug text-ink">
-              We are <em className="text-gold-dark">not</em> building AI
-              roleplay. We are building a primary-source engine for
-              understanding how great thinkers might reason about today&apos;s
-              world.
+              We are <em className="text-gold-dark">not</em> building fake
+              historical roleplay. We are building the most entertaining way to
+              argue with primary sources.
             </p>
           </blockquote>
         </div>
@@ -109,8 +114,15 @@ export default function AboutPage() {
           The Library Is Growing
         </h2>
         <p className="mx-auto mt-4 max-w-xl text-sub">
-          New voices are continually added as new source libraries are
-          completed.
+          We are starting with a small number of figures and expanding
+          carefully. New figures are added only after their source libraries are
+          reviewed, organized, and prepared for citation-backed answers.
+        </p>
+        <p className="mx-auto mt-4 max-w-xl text-sub">
+          Our goal is simple:
+        </p>
+        <p className="mt-4 font-display text-2xl font-bold text-ink">
+          Make history impossible to ignore.
         </p>
         <Link
           href="/figures"
