@@ -81,9 +81,20 @@ export function AuthForm({ mode }: AuthFormProps) {
 
   return (
     <div className="w-full max-w-sm mx-auto">
-      <h1 className="font-display text-3xl text-ink font-bold text-center mb-8">
+      <h1 className="font-display text-3xl text-ink font-bold text-center mb-2">
         {isSignup ? "Sign Up Free" : "Welcome back"}
       </h1>
+      <p className="text-center text-sm font-body text-sub mb-2">
+        {isSignup
+          ? "Start asking history’s greatest minds about today’s most controversial issues."
+          : "Return to your saved conversations, source-backed answers, and historical debates."}
+      </p>
+      {isSignup && (
+        <p className="text-center text-xs font-body text-sub mb-6">
+          Get 6 free questions per day, source-backed answers, citations, and confidence labels.
+        </p>
+      )}
+      {!isSignup && <div className="mb-6" />}
 
       {/* OAuth buttons */}
       <div className="flex flex-col gap-3 mb-6">
@@ -134,9 +145,20 @@ export function AuthForm({ mode }: AuthFormProps) {
         </div>
 
         <div className="flex flex-col gap-1">
-          <label htmlFor="password" className="text-xs font-body text-sub">
-            Password
-          </label>
+          <div className="flex items-center justify-between">
+            <label htmlFor="password" className="text-xs font-body text-sub">
+              Password
+            </label>
+            {!isSignup && (
+              /* TODO: wire real password reset flow */
+              <Link
+                href="/login"
+                className="text-xs font-body text-gold hover:underline"
+              >
+                Forgot password?
+              </Link>
+            )}
+          </div>
           <input
             id="password"
             type="password"
@@ -166,12 +188,27 @@ export function AuthForm({ mode }: AuthFormProps) {
           disabled={loading || oauthLoading !== null}
           className="w-full py-3 bg-gold text-surface font-body font-semibold text-sm rounded-lg hover:bg-gold-dark transition-colors disabled:opacity-60"
         >
-          {loading ? "Please wait…" : isSignup ? "Create account" : "Sign in"}
+          {loading ? "Please wait…" : isSignup ? "Create Free Account" : "Sign in"}
         </button>
       </form>
 
+      {/* Terms line — signup only */}
+      {isSignup && (
+        <p className="mt-4 text-center text-xs font-body text-sub">
+          By creating an account, you agree to the{" "}
+          <Link href="/terms" className="text-gold hover:underline">
+            Terms of Service
+          </Link>{" "}
+          and{" "}
+          <Link href="/privacy" className="text-gold hover:underline">
+            Privacy Policy
+          </Link>
+          .
+        </p>
+      )}
+
       {/* Footer link */}
-      <p className="mt-6 text-center text-xs font-body text-sub">
+      <p className="mt-4 text-center text-xs font-body text-sub">
         {isSignup ? (
           <>
             Already have an account?{" "}
@@ -183,10 +220,17 @@ export function AuthForm({ mode }: AuthFormProps) {
           <>
             New to Legends Library?{" "}
             <Link href="/signup" className="text-gold hover:underline">
-              Sign up free
+              Create a free account
             </Link>
           </>
         )}
+      </p>
+
+      {/* AI disclaimer */}
+      <p className="mt-4 text-center text-xs font-body text-sub italic">
+        {isSignup
+          ? "AI responses are source-grounded reconstructions — not real statements from the people depicted."
+          : "AI reconstructions grounded in primary sources — not real statements."}
       </p>
     </div>
   );

@@ -110,12 +110,12 @@ export default async function FiguresPage({
             Meet the Minds
           </h1>
           <p className="mt-3 font-display text-lg italic text-gold-dark">
-            The voices of history, ready for today.
+            Where history&apos;s biggest names meet today&apos;s biggest arguments.
           </p>
           <p className="mx-auto mt-5 max-w-xl text-sub">
-            Explore the great thinkers, leaders, and visionaries whose words
-            still shape our world. Ask them anything. Backed by primary
-            sources.
+            Explore the figures whose ideas built movements, nations,
+            revolutions, and controversies. Ask them anything — and get
+            answers grounded in primary sources.
           </p>
         </div>
       </section>
@@ -178,12 +178,12 @@ export default async function FiguresPage({
       <section className="border-t border-border bg-surface">
         <div className="mx-auto max-w-4xl px-6 py-12 text-center">
           <h2 className="font-display text-2xl font-bold text-ink">
-            All Figures. Verified Sources.
+            All Figures. Cold Sources.
           </h2>
           <p className="mx-auto mt-3 max-w-2xl text-sub">
-            Every answer comes from primary sources — letters, speeches, books,
-            and writings from the figure themselves. No opinions added. Just
-            history, in their own words.
+            Every figure in Legends Library is built from a source library:
+            speeches, letters, books, interviews, and verified writings. Ask
+            the bold question — then check the receipts.
           </p>
           <Link
             href="/how-it-works"
