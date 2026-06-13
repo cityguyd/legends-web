@@ -8,7 +8,7 @@ const msg = { figureName: "Martin Luther King, Jr.", text: "Answer text",
 test("renders figure name, body, confidence badge and citation chip", () => {
   render(<ResponseCard message={msg} />);
   expect(screen.getByText("Martin Luther King, Jr.")).toBeInTheDocument();
-  expect(screen.getByText("Documented")).toBeInTheDocument();
+  expect(screen.getByText("Strong")).toBeInTheDocument();
   expect(screen.getByText(/letter from birmingham jail, 1963/i)).toBeInTheDocument();
 });
 
@@ -28,10 +28,10 @@ test("citation chip collapses snippet on second click", async () => {
   expect(queryByText("Quote…")).toBeNull();
 });
 
-test("unknown tier 'refused' with no citations renders nothing", () => {
-  const { container } = render(
+test("tier 'refused' with no citations renders the Refused badge", () => {
+  render(
     <ResponseCard message={{ text: "Answer", confidence: "refused" }} />
   );
-  // EvidenceRow returns null — no border-t divider rendered
-  expect(container.querySelector(".border-t.border-border.pt-3")).toBeNull();
+  // ConfidenceBadge now renders for "refused" — EvidenceRow shows the badge row
+  expect(screen.getByText("Refused")).toBeInTheDocument();
 });

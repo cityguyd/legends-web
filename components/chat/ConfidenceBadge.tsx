@@ -1,8 +1,8 @@
-export type ConfidenceTier = "strong" | "inferred" | "speculative";
+export type ConfidenceTier = "strong" | "inferred" | "refused";
 
 const TIERS: Record<ConfidenceTier, { label: string; pill: string; dot: string }> = {
   strong: {
-    label: "Documented",
+    label: "Strong",
     pill: "bg-confidence-doc-bg text-confidence-doc",
     dot: "bg-confidence-doc",
   },
@@ -11,8 +11,8 @@ const TIERS: Record<ConfidenceTier, { label: string; pill: string; dot: string }
     pill: "bg-confidence-inf-bg text-confidence-inf",
     dot: "bg-confidence-inf",
   },
-  speculative: {
-    label: "Speculative",
+  refused: {
+    label: "Refused",
     pill: "bg-confidence-spec-bg text-confidence-spec",
     dot: "bg-confidence-spec",
   },
@@ -23,9 +23,12 @@ export function isRenderableTier(tier: string): tier is ConfidenceTier {
   return tier in TIERS;
 }
 
+/** Capitalized Strong/Inferred/Refused label, or null for unknown tiers. */
+export function confidenceLabel(tier: string): string | null {
+  return TIERS[tier as ConfidenceTier]?.label ?? null;
+}
+
 export function ConfidenceBadge({ tier }: { tier: string }) {
-  // Tier values come from engine-generated jsonb at runtime; render nothing
-  // for values we don't recognize (e.g. "refused").
   const t = TIERS[tier as ConfidenceTier];
   if (!t) return null;
   return (

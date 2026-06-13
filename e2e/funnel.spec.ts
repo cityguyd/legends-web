@@ -9,7 +9,7 @@ import { test, expect } from "@playwright/test";
 //   - Composer placeholder is "Ask your question…" (generic, not figure-specific).
 //   - The Ask button is labelled "Ask".
 //   - FigureHeader's disclosure strip reads "…not the real person."
-//   - ResponseCard shows the "Documented" badge for confidence tier "strong".
+//   - ResponseCard shows the "Strong" badge for confidence tier "strong".
 //   - The anon-daily LimitModal CTA is "Sign Up Free".
 
 test("anonymous asks, hits limit, sees signup modal", async ({ page }) => {
@@ -33,10 +33,10 @@ test("anonymous asks, hits limit, sees signup modal", async ({ page }) => {
     await composer.press("Enter");
   }
 
-  // Three successful questions — each produces a "Documented" response card.
+  // Three successful questions — each produces a "Strong" response card.
   for (let i = 0; i < 3; i++) {
     await ask(`question ${i}`);
-    await expect(page.getByText("Documented").nth(i)).toBeVisible();
+    await expect(page.getByText("Strong").nth(i)).toBeVisible();
   }
 
   // Fourth question — the mock engine returns 429 → anon-daily limit modal.
