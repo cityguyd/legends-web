@@ -1,54 +1,150 @@
 # Privacy Policy
 
-*Last updated: June 12, 2026*
+*Last updated: June 13, 2026*
 
-Legends Library ("we", "us") respects your privacy. This policy explains what we collect, why, and the choices you have. The short version: **we never sell your data, and your conversations are private.**
+Legends Library respects your privacy. This Privacy Policy explains what information we collect, how we use it, and what choices you have.
 
-## 1. Information We Collect
+We do not sell your personal information.
 
-- **Account information.** Email address and authentication details when you sign up (including via Google or Apple sign-in).
-- **Conversations.** The questions you ask and the responses you save, so the Service can work and you can revisit them.
-- **Billing information.** If you subscribe to Premium, payments are processed by Stripe. We receive subscription status and a customer reference — we never see or store your full card number.
-- **Usage data.** Basic technical data (pages visited, device and browser type, approximate region) used to operate, secure, and improve the Service.
+## Information We Collect
 
-## 2. How We Use Information
+We may collect the following types of information:
 
-- To provide the Service: answering questions, saving conversations, enforcing plan limits.
-- To process subscriptions and prevent fraud and abuse.
-- To improve the Service, including evaluating answer quality. Where we review conversations for quality, we work with the minimum data necessary.
-- To communicate with you about your account, security, and material changes to the Service.
+**Account Information**
 
-## 3. What We Do Not Do
+Name, email address, login credentials, subscription status, and account settings.
 
-- We do not sell your personal information.
-- We do not share your conversations with advertisers.
-- We do not use your private conversations to publicly train models in a way that could expose your data to other users.
+**Usage Information**
 
-## 4. Sharing
+Questions you ask, figures you interact with, answers generated, saved conversations, shared conversations, feature usage, device information, browser information, IP address, timestamps, and similar usage data.
 
-We share data only with service providers needed to run Legends Library (hosting, database, authentication, payment processing, error monitoring), under contracts that limit their use of your data, or where required by law.
+**Payment Information**
 
-## 5. Data Retention and Deletion
+If you subscribe to a paid plan, payment information is processed by our payment provider. We do not store full credit card numbers on our servers.
 
-- Saved conversations are retained until you delete them or your account.
-- You can delete your account at any time; we will delete or anonymize your personal data within a reasonable period, except where retention is required by law (e.g., billing records).
+**User Content**
 
-## 6. Security
+Prompts, questions, messages, uploaded files, comments, feedback, and other content you submit to Legends Library.
 
-We use industry-standard safeguards including encryption in transit, access controls, and least-privilege infrastructure. No system is perfectly secure; if a breach affecting your data occurs, we will notify you as required by law.
+**Public or Shared Content**
 
-## 7. Your Rights
+If you choose to share a conversation, publish an answer, or use a public link, that content may become visible to others.
 
-Depending on your jurisdiction, you may have rights to access, correct, export, or delete your personal data, and to object to or restrict certain processing. Contact us to exercise these rights and we will respond as required by applicable law (including GDPR and CCPA where they apply).
+## How We Use Information
 
-## 8. Children
+We use information to:
 
-The Service is not directed to children under 13, and we do not knowingly collect personal information from them. If you believe a child has provided us personal information, contact us and we will delete it.
+- Provide, operate, and improve Legends Library
+- Generate AI responses
+- Retrieve relevant source materials
+- Save chat history and account preferences
+- Process subscriptions and payments
+- Prevent abuse, fraud, scraping, and unsafe use
+- Enforce usage limits and safety rules
+- Analyze product performance
+- Debug errors and improve reliability
+- Communicate with users
+- Respond to legal, rights-holder, or safety concerns
 
-## 9. Changes to This Policy
+## AI Processing
 
-We may update this policy from time to time. If changes are material, we will notify you by email or in-app notice before they take effect.
+Legends Library uses AI model providers and related infrastructure to generate responses.
 
-## 10. Contact
+When you ask a question, your prompt, relevant source excerpts, account status, and conversation context may be sent to AI model providers or service providers so the system can generate, verify, and return an answer.
 
-Privacy questions or requests: support@legendslibrary.app.
+We do not authorize service providers to use your private conversations to train public models where provider settings allow us to control this.
+
+## Private, Saved, and Shared Conversations
+
+Private conversations are not published unless you choose to share them or make them public.
+
+Saved conversations may be stored in your account so you can return to them later.
+
+Shared or public conversations may be visible to anyone with the link and may be displayed, indexed, featured, or used to create examples, public pages, trending question lists, or promotional materials.
+
+Do not share a conversation publicly if it contains personal, sensitive, confidential, or private information.
+
+## Service Providers
+
+We may share limited information with service providers that help us operate Legends Library, including providers for:
+
+- Hosting and databases
+- Authentication
+- AI model processing
+- Payments
+- Analytics
+- Email delivery
+- Security and abuse prevention
+- Error monitoring
+- Customer support
+
+These providers may process information only for the purposes we authorize.
+
+## Cookies and Analytics
+
+We may use cookies, local storage, analytics tools, and similar technologies to keep you logged in, remember preferences, understand usage, prevent abuse, and improve the service.
+
+You may be able to control cookies through your browser settings, but some features may not work properly without them.
+
+## Safety, Abuse, and Legal Review
+
+We may review user content, account activity, or generated outputs when needed to:
+
+- Investigate abuse
+- Enforce our Terms
+- Prevent unsafe or illegal use
+- Debug technical issues
+- Respond to user reports
+- Address rights-holder concerns
+- Comply with law
+- Protect Legends Library, users, or the public
+
+## Data Retention
+
+We keep information for as long as needed to provide the service, comply with legal obligations, resolve disputes, enforce agreements, prevent abuse, and operate our business.
+
+You may request deletion of your account or certain data by contacting us.
+
+Some information may remain in backups, logs, legal records, payment records, abuse-prevention systems, or public/shared pages where deletion is not technically or legally practical.
+
+## Your Choices
+
+You may:
+
+- Access your account
+- Update account information
+- Cancel your subscription
+- Delete saved conversations where available
+- Choose whether to share conversations publicly
+- Request account deletion
+- Contact us with privacy questions
+
+## Children
+
+Legends Library is not intended for children under 13.
+
+If we learn that we have collected personal information from a child under 13 without appropriate consent, we will take reasonable steps to delete it.
+
+## Security
+
+We use reasonable technical and organizational measures to protect information.
+
+However, no online service can guarantee perfect security. You should avoid submitting highly sensitive, confidential, or private information to Legends Library.
+
+## International Users
+
+If you access Legends Library from outside the United States, your information may be processed in the United States or other countries where our service providers operate.
+
+## Changes to This Policy
+
+We may update this Privacy Policy from time to time.
+
+If we make material changes, we may notify users through the website, email, or account notices.
+
+Continued use of Legends Library after changes means you accept the updated policy.
+
+## Contact
+
+For privacy questions, account requests, rights-holder concerns, corrections, takedown concerns, billing questions, or general support, contact:
+
+support@legendslibrary.ai

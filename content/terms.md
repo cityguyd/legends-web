@@ -1,61 +1,179 @@
 # Terms of Service
 
-*Last updated: June 12, 2026*
+*Last updated: June 13, 2026*
 
-Welcome to Legends Library. These Terms of Service ("Terms") govern your use of the Legends Library website, applications, and services (the "Service"). By creating an account or using the Service, you agree to these Terms. If you do not agree, do not use the Service.
+Welcome to Legends Library. These Terms of Service govern your access to and use of Legends Library, including our website, AI-generated responses, source-grounded historical tools, accounts, subscriptions, and related features.
 
-## 1. The Service
+By using Legends Library, you agree to these Terms.
 
-Legends Library lets you ask questions and receive AI-generated responses presented in the voice of historical and public figures. All responses are **AI reconstructions grounded in primary sources — not the real person**. The Service is a research and perspective tool, not a historical authority, and responses may contain errors or interpretations that scholars would dispute.
+## What Legends Library Is
 
-## 2. Accounts
+Legends Library is an educational, commentary, and entertainment platform that uses AI to generate source-grounded interpretations of how historical and public figures may have reasoned about modern and historical questions.
 
-- You must be at least 13 years old (or the minimum age of digital consent in your jurisdiction) to use the Service.
-- You are responsible for your account credentials and for all activity under your account.
-- You must provide accurate information and keep it up to date.
+Outputs are AI-generated reconstructions. They are not real statements, endorsements, communications, or authorized messages from the people depicted.
 
-## 3. Plans, Billing, and Fair Use
+## Accounts
 
-- The **Free** plan includes a limited number of questions per day and a limited number of saved conversations.
-- The **Premium** plan ($5/month) includes unlimited questions, subject to fair use. "Unlimited" means no fixed daily cap for normal human use; we may throttle or suspend usage patterns that indicate automation, scraping, resale, or abuse.
-- Subscriptions renew monthly until cancelled. You can cancel anytime, effective at the end of the current billing period.
-- New Premium subscriptions are covered by a 14-day money-back guarantee.
-- Prices may change; we will give you advance notice before any change affects you.
+You may need an account to use certain features.
 
-## 4. Acceptable Use
+You agree to provide accurate account information and to keep your login credentials secure. You are responsible for activity that occurs under your account.
 
-You agree not to:
+We may suspend or terminate accounts that violate these Terms, abuse the service, attempt to bypass limits, or create legal, security, or operational risk.
 
-- Use the Service to harass, defame, or impersonate any person, or to present AI-generated content as genuine statements of any real person.
-- Attempt to extract, scrape, or bulk-download source materials, model outputs, or other content by automated means.
-- Circumvent usage limits, security measures, or access controls.
-- Use the Service to generate or spread misinformation, or remove the AI-reconstruction labeling from shared content.
-- Use the Service to reconstruct, reproduce, or reassemble substantial portions of copyrighted works — including but not limited to books, speeches, letters, or other protected texts — whether by requesting extended quotations, chaining prompts to elicit successive excerpts, or any other method designed to extract copyrighted content rather than engage with the Service's interpretive and educational purpose.
-- Violate any applicable law or the rights of any third party.
+## Free and Premium Plans
 
-## 5. Content and Intellectual Property
+Legends Library may offer free and paid plans.
 
-- The Service, including its software, design, and original content, is owned by Legends Library and protected by intellectual-property laws.
-- Quotations from third-party works are used under fair use, in brief excerpts, with attribution. The underlying works remain the property of their rights holders.
-- You retain rights to the questions you submit. You grant us a license to process them to operate and improve the Service.
-- You may share AI responses for personal, educational, and non-commercial purposes, provided attribution to Legends Library and the AI-reconstruction notice are preserved.
+Free plans may include daily usage limits, limited access to figures, and limited saved history.
 
-## 6. Disclaimers
+Premium plans may include additional features such as unlimited standard questions, Historical Council Mode, Debate Mode, saved conversations, shareable answer pages, PDF exports, early access to new figures, and hot-topic drops.
 
-THE SERVICE IS PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT WARRANTIES OF ANY KIND, EXPRESS OR IMPLIED. WE DO NOT WARRANT THAT RESPONSES ARE ACCURATE, COMPLETE, OR SUITABLE FOR ANY PARTICULAR PURPOSE. AI-GENERATED CONTENT DOES NOT REPRESENT THE VIEWS OF ANY REAL PERSON, ESTATE, OR ORGANIZATION.
+Premium features, pricing, and limits may change over time.
 
-## 7. Limitation of Liability
+## Fair Use Limits
 
-To the maximum extent permitted by law, Legends Library will not be liable for any indirect, incidental, special, consequential, or punitive damages, or for any loss of profits, data, or goodwill, arising from your use of the Service. Our total liability for any claim is limited to the amount you paid us in the twelve months before the claim arose.
+"Unlimited standard questions" means ordinary personal use of standard single-figure questions, subject to reasonable fair-use limits.
 
-## 8. Termination
+High-compute features, including Historical Council Mode, Debate Mode, large exports, unusually long conversations, automated usage, or excessive repeated requests, may be limited, throttled, or capped to keep the service fast, reliable, and sustainable.
 
-We may suspend or terminate your access if you violate these Terms. You may delete your account at any time. Sections that by their nature should survive termination (including intellectual property, disclaimers, and limitation of liability) survive.
+You may not use scripts, bots, automation, scraping, account sharing, or other methods to bypass usage limits.
 
-## 9. Changes to These Terms
+## Billing and Cancellation
 
-We may update these Terms from time to time. If changes are material, we will notify you by email or in-app notice before they take effect. Continued use after the effective date constitutes acceptance.
+Paid subscriptions are billed through our payment processor.
 
-## 10. Contact
+By subscribing, you authorize recurring charges until you cancel. You may cancel anytime. Cancellation stops future billing but does not automatically refund prior charges unless otherwise stated.
 
-Questions about these Terms? Contact us at support@legendslibrary.app.
+If we offer a founding member price, promotional price, or discount, that pricing may apply only under the stated conditions.
+
+## Refunds
+
+If Legends Library offers a refund period, the refund terms will be stated on the pricing or checkout page.
+
+We may deny refunds in cases of abuse, excessive use, fraud, chargeback abuse, violation of these Terms, or attempts to extract protected materials from the service.
+
+## Acceptable Use and Safety Rules
+
+You agree not to use Legends Library to create, request, upload, share, or distribute content that:
+
+- Breaks the law or encourages others to break the law
+- Threatens, harasses, intimidates, abuses, defames, or targets another person or group
+- Promotes, praises, instructs, or facilitates violence, terrorism, extremist activity, or physical harm
+- Provides instructions for weapons, explosives, biological, chemical, radiological, or nuclear harm, or other dangerous activities
+- Encourages self-harm, suicide, eating disorders, or other serious personal harm
+- Sexualizes, exploits, endangers, grooms, or targets minors in any way
+- Requests or generates child sexual abuse material, whether real, fictional, AI-generated, or implied
+- Requests erotic, pornographic, sexually explicit, or non-consensual sexual content
+- Requests sexual violence, coercion, exploitation, or abuse
+- Facilitates criminal activity, including fraud, scams, theft, evasion, trafficking, stalking, extortion, or evading law enforcement
+- Requests malicious cyber activity, including hacking, credential theft, malware, phishing, system compromise, or bypassing security protections
+- Attempts to collect, expose, infer, or distribute private, sensitive, biometric, financial, medical, or identifying information about another person without authorization
+- Impersonates another person or falsely suggests affiliation with an estate, foundation, institution, campaign, publisher, company, or rights holder
+- Creates or spreads false, misleading, or deceptive content, including fake quotes, fake endorsements, manipulated historical claims, or fabricated source citations
+- Uses AI-generated outputs for political campaigning, targeted persuasion, voter suppression, election misinformation, lobbying, or other regulated political activity
+- Seeks legal, medical, financial, psychological, religious, political campaign, or other professional advice in a way that requires a licensed or qualified professional
+- Attempts to extract, reconstruct, bulk-download, or reproduce copyrighted works, source libraries, prompts, system instructions, or protected service materials
+- Uses scripts, bots, automation, scraping, account sharing, or technical workarounds to bypass usage limits, moderation systems, payment requirements, or access controls
+- Attempts to reverse engineer, attack, overload, disrupt, or interfere with Legends Library or its service providers
+
+Legends Library may refuse, filter, remove, limit, or moderate content that violates these rules or creates legal, safety, reputational, security, or operational risk.
+
+We may suspend or terminate accounts that violate these rules, attempt to bypass safeguards, misuse outputs, or use the service in a way that could harm other users, rights holders, the public, or Legends Library.
+
+## Historical and Educational Discussion
+
+Legends Library may allow discussion of difficult historical topics, including war, racism, crime, sexuality, religion, political conflict, extremist movements, and violence, when the purpose is educational, analytical, critical, or historical.
+
+However, users may not use that historical context as a pretext to request instructions, encouragement, praise, recruitment, exploitation, sexual content, harassment, illegal activity, or real-world harm.
+
+We may interpret borderline requests based on context, user behavior, safety risk, and the purpose of the request.
+
+## Sharing Outputs
+
+You may share Legends Library responses, screenshots, excerpts, and links for commentary, education, discussion, criticism, and non-commercial purposes.
+
+When sharing outputs, you must preserve the context that the response is AI-generated and source-grounded. You may not present outputs as real statements by the figure.
+
+Commercial use, republication at scale, resale, dataset creation, or use of outputs to train competing systems requires written permission from Legends Library.
+
+## Source Materials
+
+Legends Library may use public-domain, licensed, lawfully acquired, user-provided, or otherwise permitted materials to build source libraries.
+
+Quoted excerpts are intended to be brief, attributed, and used for commentary, education, research, and analysis.
+
+You may not use the service as a substitute for purchasing, licensing, or accessing original works.
+
+## User Content
+
+You are responsible for the questions, prompts, files, comments, and other content you submit.
+
+By submitting content, you grant Legends Library the rights needed to process, store, display, and generate responses from that content for the purpose of operating and improving the service.
+
+Private conversations are not published unless you choose to share them or make them public.
+
+Public or shared conversations may be displayed, indexed, featured, or used to create examples, public pages, trending question lists, or promotional materials.
+
+## AI Outputs
+
+AI outputs may be inaccurate, incomplete, biased, unsupported, or inappropriate. Legends Library uses retrieval, citations, confidence labels, and verification steps to improve quality, but no AI system is perfect.
+
+You are responsible for evaluating outputs and cited sources before relying on or sharing them.
+
+## No Professional Advice
+
+Legends Library is not a substitute for professional advice.
+
+The service does not provide legal, financial, medical, psychological, religious, political campaign, or other professional advice.
+
+## Intellectual Property
+
+Legends Library owns or licenses the website, design, branding, software, prompts, systems, workflows, source-library organization, and other service materials.
+
+You may not copy, modify, distribute, reverse engineer, or create derivative services from Legends Library except as allowed by these Terms.
+
+## Rights-Holder Concerns
+
+Rights holders may contact us with concerns about source materials, attribution, excerpts, likeness, or other issues.
+
+Contact:
+
+support@legendslibrary.ai
+
+We may review, restrict, remove, or modify materials or features at our discretion.
+
+## Service Changes
+
+We may update, change, suspend, or discontinue parts of the service at any time.
+
+We may add or remove figures, features, source libraries, pricing, usage limits, or availability.
+
+## Termination
+
+We may suspend or terminate your access if you violate these Terms, create risk for the service, misuse outputs, abuse usage limits, or use Legends Library in a way that could harm other users, rights holders, or the company.
+
+## Disclaimers
+
+Legends Library is provided "as is" and "as available."
+
+We do not guarantee that the service will be uninterrupted, error-free, accurate, complete, secure, or available at all times.
+
+We do not guarantee that any AI-generated response is historically correct, legally safe to reuse, or suitable for your specific purpose.
+
+## Limitation of Liability
+
+To the fullest extent permitted by law, Legends Library and its owners, operators, employees, contractors, partners, and service providers will not be liable for indirect, incidental, consequential, special, punitive, or exemplary damages arising from your use of the service.
+
+## Changes to These Terms
+
+We may update these Terms from time to time.
+
+If we make material changes, we may notify users through the website, email, or account notices.
+
+Continued use of the service after changes means you accept the updated Terms.
+
+## Contact
+
+For questions about these Terms, contact:
+
+support@legendslibrary.ai
