@@ -7,7 +7,7 @@ import type { SSEEvent } from "./parseSSE";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
-export type ConfidenceTier = "strong" | "inferred" | "refused" | "speculative";
+export type ConfidenceTier = "strong" | "inferred" | "refused";
 
 export interface Citation {
   title: string;
@@ -139,8 +139,7 @@ function isConfidenceTier(value: unknown): value is ConfidenceTier {
   return (
     value === "strong" ||
     value === "inferred" ||
-    value === "refused" ||
-    value === "speculative"
+    value === "refused"
   );
 }
 
