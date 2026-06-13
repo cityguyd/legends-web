@@ -69,6 +69,11 @@ export default function HowItWorksPage() {
             writings — then uses AI to reconstruct how their documented ideas
             might apply to today&apos;s most controversial questions.
           </p>
+          <p className="mx-auto mt-4 max-w-2xl text-sub">
+            The result is not a real statement from the person. It is a
+            source-grounded take with citations, confidence labels, and clear
+            boundaries between evidence and inference.
+          </p>
           <Link
             href="/figures"
             className="mt-8 inline-block rounded-lg bg-gold px-6 py-3 font-semibold text-white transition-colors hover:bg-gold-dark"
