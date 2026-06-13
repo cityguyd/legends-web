@@ -20,7 +20,7 @@ export default function HomePage() {
           backgroundPosition: "center top",
         }}
       >
-        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/40" />
+        <div className="absolute inset-0 bg-linear-to-b from-black/30 via-transparent to-black/40" />
         <div className="relative mx-auto max-w-4xl px-6 py-24 text-center">
           <h1 className="font-display text-5xl font-bold tracking-tight text-white drop-shadow-lg md:text-6xl">
             Legends Library
@@ -78,7 +78,7 @@ export default function HomePage() {
                 className="relative flex flex-col overflow-hidden rounded-xl border border-border shadow-sm"
                 style={bgUrl ? { backgroundImage: `url('${bgUrl}')`, backgroundSize: "cover", backgroundPosition: "center" } : undefined}
               >
-                {bgUrl && <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/40 to-black/60" />}
+                {bgUrl && <div className="absolute inset-0 bg-linear-to-b from-black/50 via-black/40 to-black/60" />}
                 <div className={`relative flex flex-col p-5 h-full${bgUrl ? "" : " bg-surface"}`}>
                   <h3 className={`font-display text-lg font-bold leading-snug ${bgUrl ? "text-white" : "text-ink"}`}>
                     {card.question}

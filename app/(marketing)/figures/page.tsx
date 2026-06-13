@@ -113,7 +113,7 @@ export default async function FiguresPage({
           backgroundPosition: "center 20%",
         }}
       >
-        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-black/50" />
+        <div className="absolute inset-0 bg-linear-to-b from-black/50 via-black/30 to-black/50" />
         <div className="relative mx-auto max-w-3xl px-6 py-20 text-center">
           <h1 className="font-display text-5xl font-bold text-white drop-shadow-lg">
             Meet the Minds
