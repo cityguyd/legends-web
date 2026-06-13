@@ -5,7 +5,7 @@ export const revalidate = 3600;
 export const metadata = {
   title: "Pricing — Legends Library",
   description:
-    "Start free. Unlock the full debate when you&apos;re ready. Ask bold questions, get cited answers, and explore how history&apos;s biggest minds might argue about today&apos;s biggest issues.",
+    "Start free. Unlock the full debate when you're ready. Ask bold questions, get cited answers, and explore how history's biggest minds might argue about today's biggest issues.",
 };
 
 const freeFeatures = [
