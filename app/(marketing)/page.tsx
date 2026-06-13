@@ -4,6 +4,7 @@ import {
   TRENDING_QUESTIONS,
   cardHref,
 } from "@/lib/marketing/homeCards";
+import { QUESTION_BACKGROUNDS } from "@/lib/marketing/assets";
 
 export const revalidate = 3600;
 
@@ -69,27 +70,34 @@ export default function HomePage() {
         </div>
 
         <ul className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {FEATURED_CARDS.map((card) => (
-            <li
-              key={card.question}
-              className="flex flex-col rounded-xl border border-border bg-surface p-5 shadow-sm"
-            >
-              <h3 className="font-display text-lg font-bold leading-snug text-ink">
-                {card.question}
-              </h3>
-              <p className="mt-2 text-xs font-medium uppercase tracking-wide text-gold-dark">
-                {card.meta}
-              </p>
-              <div className="mt-auto pt-4">
-                <Link
-                  href={cardHref(card)}
-                  className="text-sm font-semibold text-gold-dark hover:underline"
-                >
-                  {card.live ? `Ask ${card.figureShort} →` : "Notify Me →"}
-                </Link>
-              </div>
-            </li>
-          ))}
+          {FEATURED_CARDS.map((card) => {
+            const bgUrl = card.figureSlug ? QUESTION_BACKGROUNDS[card.figureSlug] : undefined;
+            return (
+              <li
+                key={card.question}
+                className="relative flex flex-col overflow-hidden rounded-xl border border-border shadow-sm"
+                style={bgUrl ? { backgroundImage: `url('${bgUrl}')`, backgroundSize: "cover", backgroundPosition: "center" } : undefined}
+              >
+                {bgUrl && <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/40 to-black/60" />}
+                <div className={`relative flex flex-col p-5 h-full${bgUrl ? "" : " bg-surface"}`}>
+                  <h3 className={`font-display text-lg font-bold leading-snug ${bgUrl ? "text-white" : "text-ink"}`}>
+                    {card.question}
+                  </h3>
+                  <p className={`mt-2 text-xs font-medium uppercase tracking-wide ${bgUrl ? "text-amber-300" : "text-gold-dark"}`}>
+                    {card.meta}
+                  </p>
+                  <div className="mt-auto pt-4">
+                    <Link
+                      href={cardHref(card)}
+                      className={`text-sm font-semibold hover:underline ${bgUrl ? "text-amber-300" : "text-gold-dark"}`}
+                    >
+                      {card.live ? `Ask ${card.figureShort} →` : "Notify Me →"}
+                    </Link>
+                  </div>
+                </div>
+              </li>
+            );
+          })}
         </ul>
       </section>
 
