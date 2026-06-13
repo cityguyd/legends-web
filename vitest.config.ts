@@ -13,5 +13,8 @@ export default defineConfig({
     environment: "jsdom",
     globals: true,
     setupFiles: ["./tests/setup.ts"],
+    // Unit/component tests only. Playwright owns e2e/ (different runner).
+    include: ["tests/**/*.{test,spec}.{ts,tsx}"],
+    exclude: ["node_modules", "e2e/**", ".next/**"],
   },
 });

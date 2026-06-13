@@ -89,6 +89,51 @@ export function isLive(figure: { wave: number }): boolean {
   return figure.wave === LIVE_WAVE;
 }
 
+// ── E2E fixture seam ──────────────────────────────────────────────────────────
+// When E2E_MOCK_DATA=1 the data layer returns hardcoded figures instead of
+// hitting Supabase. This lets Playwright exercise the real chat/profile flows
+// without a database. It is OFF unless the env var is explicitly set, so it can
+// never activate in production. Only getFigureBySlug / getFigures consult it;
+// sources & featured questions stay empty (the pages render empty states).
+function e2eEnabled(): boolean {
+  return process.env.E2E_MOCK_DATA === "1";
+}
+
+const E2E_FIGURES: Record<string, FigureDetail> = {
+  // Live figure: wave 1 + corpus ready → chat page renders. Has a historical
+  // voice note so the voice toggle is shown.
+  "martin-luther-king": {
+    id: "e2e-mlk-0000-0000-0000-000000000001",
+    slug: "martin-luther-king",
+    name: "Martin Luther King, Jr.",
+    era: "1929–1968",
+    region: "United States",
+    category: ["Civil Rights"],
+    wave: 1,
+    tagline: "Minister and civil rights leader",
+    portrait_url: null,
+    featured_order: 1,
+    min_corpus_ok: true,
+    hasHistoricalVoice: true,
+  },
+  // Coming-soon figure: wave 2 → chat page redirects to the profile, which
+  // shows the "Notify me" affordance.
+  "george-washington": {
+    id: "e2e-gw-0000-0000-0000-000000000002",
+    slug: "george-washington",
+    name: "George Washington",
+    era: "1732–1799",
+    region: "United States",
+    category: ["Founding Era"],
+    wave: 2,
+    tagline: "First President of the United States",
+    portrait_url: null,
+    featured_order: 2,
+    min_corpus_ok: false,
+    hasHistoricalVoice: false,
+  },
+};
+
 
 /**
  * Anonymous, cookie-free Supabase client for public marketing data.
@@ -121,6 +166,7 @@ function parseFigureDetailRow(row: unknown): FigureDetail | null {
 }
 
 async function _fetchFigures(): Promise<Figure[]> {
+  if (e2eEnabled()) return Object.values(E2E_FIGURES);
   const supabase = anonClient();
   if (!supabase) return [];
   try {
@@ -189,6 +235,7 @@ const FIGURE_DETAIL_COLUMNS =
   "id, slug, name, era, region, category, wave, tagline, portrait_url, featured_order, min_corpus_ok, historical_voice_note";
 
 async function _fetchFigureBySlug(slug: string): Promise<FigureDetail | null> {
+  if (e2eEnabled()) return E2E_FIGURES[slug] ?? null;
   const supabase = anonClient();
   if (!supabase) return null;
   try {
