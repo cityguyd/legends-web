@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { FigureCard } from "@/components/marketing/FigureCard";
 import { getFigures, type Figure } from "@/lib/marketing/data";
+import { FIGURE_HEADERS } from "@/lib/marketing/assets";
 
 // Page is dynamic (reads searchParams for filtering) so route-level revalidate
 // is inert. Data caching is handled in getFigures via unstable_cache.
@@ -172,7 +173,7 @@ export default async function FiguresPage({
                     era: figure.era,
                     categories: figure.category,
                     wave: figure.wave,
-                    portraitUrl: figure.portrait_url,
+                    portraitUrl: figure.portrait_url ?? FIGURE_HEADERS[figure.slug] ?? null,
                     shortName: (figure as unknown as Record<string, unknown>).short_name as string | undefined,
                   }}
                 />

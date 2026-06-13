@@ -31,6 +31,7 @@ export function shortName(figure: Pick<FigureCardFigure, "name" | "shortName">):
 
 export function FigureCard({ figure }: { figure: FigureCardFigure }) {
   const live = isLive(figure);
+  const isHeaderImage = figure.portraitUrl?.startsWith("/images/figures/") ?? false;
 
   return (
     <article className="relative flex flex-col rounded-xl border border-border bg-surface p-5 text-center shadow-sm">
@@ -40,23 +41,36 @@ export function FigureCard({ figure }: { figure: FigureCardFigure }) {
         </span>
       )}
 
-      <div className="mx-auto mb-4 size-24 overflow-hidden rounded-full border-2 border-gold/40 bg-card">
-        {figure.portraitUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={figure.portraitUrl}
-            alt={`Portrait of ${figure.name}`}
-            className={`size-full object-cover ${live ? "" : "opacity-60 grayscale"}`}
-          />
+      {figure.portraitUrl ? (
+        isHeaderImage ? (
+          <div className="mb-4 -mx-5 -mt-5 h-36 overflow-hidden rounded-t-xl">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={figure.portraitUrl}
+              alt={`Portrait of ${figure.name}`}
+              className={`w-full h-full object-cover object-top${live ? "" : " opacity-60 grayscale"}`}
+            />
+          </div>
         ) : (
+          <div className="mx-auto mb-4 size-24 overflow-hidden rounded-full border-2 border-gold/40 bg-card">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={figure.portraitUrl}
+              alt={`Portrait of ${figure.name}`}
+              className={`size-full object-cover${live ? "" : " opacity-60 grayscale"}`}
+            />
+          </div>
+        )
+      ) : (
+        <div className="mx-auto mb-4 size-24 overflow-hidden rounded-full border-2 border-gold/40 bg-card">
           <span
             aria-hidden="true"
             className="flex size-full items-center justify-center font-display text-2xl text-gold"
           >
             {figure.name.charAt(0)}
           </span>
-        )}
-      </div>
+        </div>
+      )}
 
       <h3 className="font-display text-lg font-bold text-ink">{figure.name}</h3>
       {figure.era && <p className="mt-0.5 text-sm text-gold-dark">{figure.era}</p>}
