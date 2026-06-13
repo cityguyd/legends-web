@@ -117,7 +117,7 @@ export default function PricingPage() {
             </p>
             <p className="mt-5">
               <span className="font-display text-5xl font-bold text-ink">
-                $7
+                $5
               </span>
               <span className="text-sub">/month</span>
             </p>

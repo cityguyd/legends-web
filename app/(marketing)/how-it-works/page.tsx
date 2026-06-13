@@ -23,8 +23,8 @@ const differentiators = [
     body: "Not every question has a clean answer in the historical record. That's why every response carries a confidence label. Strong means we found direct evidence — a quote, a position, a documented stance. Inferred means the evidence points in a direction but isn't explicit — the figure will tell you so, and explain their reasoning. Refused means there's no honest basis for an answer, and the figure says that too, in character. We'd rather give you a thoughtful \"I cannot speak to this honestly\" than a confident hallucination.",
   },
   {
-    heading: "The AI stays in its lane.",
-    body: "Our system is designed with strict boundaries per figure. Jesus only speaks from attributed Gospel text and reasonable theological inference — he won't claim knowledge of things that postdate his life. MLK won't comment on events after April 1968. Kirk's responses flag anything that occurred after his death in September 2025. Every figure has documented boundaries, and every inferred response is labeled as such. The goal isn't to make history agree with you. It's to give you the most honest answer the historical record supports.",
+    heading: "Every question gets an answer — and an honest label.",
+    body: "Our figures will engage with any question, including questions about events that postdate their lives. That's the whole point: applying a historical mind to today's world. What changes is the confidence label. When a question is grounded in documented evidence, you get a high-confidence response with citations. When it requires extending the figure's reasoning to new terrain, you get a medium or low confidence response that tells you exactly that — and explains the inference. A clearly-labeled interpretation is more useful than a refusal. We'd rather tell you 'here is how MLK's documented worldview applies to this question, with low confidence' than leave you without the perspective entirely.",
   },
   {
     heading: "What you're getting — and what you're not.",

@@ -33,7 +33,7 @@ const UPSELL_CONTENT: Record<Exclude<LimitModalKind, "notify">, UpsellContent> =
     "free-daily": {
       heading: "You’ve reached today’s limit",
       body: "Upgrade to Premium for unlimited questions (fair use), clean copy, and PDF export.",
-      ctaLabel: "Go Premium — $7/month",
+      ctaLabel: "Go Premium — $5/month",
       ctaHref: "/pricing",
     },
     "save-cap": {

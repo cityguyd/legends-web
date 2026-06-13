@@ -135,7 +135,7 @@ export default async function AccountPage() {
                   href="/api/stripe/checkout"
                   className="rounded-lg bg-gold px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-gold-dark"
                 >
-                  Go Premium — $7/month
+                  Go Premium — $5/month
                 </a>
               )}
             </div>

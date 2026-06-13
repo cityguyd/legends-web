@@ -17,7 +17,7 @@ Legends Library lets you ask questions and receive AI-generated responses presen
 ## 3. Plans, Billing, and Fair Use
 
 - The **Free** plan includes a limited number of questions per day and a limited number of saved conversations.
-- The **Premium** plan ($7/month) includes unlimited questions, subject to fair use. "Unlimited" means no fixed daily cap for normal human use; we may throttle or suspend usage patterns that indicate automation, scraping, resale, or abuse.
+- The **Premium** plan ($5/month) includes unlimited questions, subject to fair use. "Unlimited" means no fixed daily cap for normal human use; we may throttle or suspend usage patterns that indicate automation, scraping, resale, or abuse.
 - Subscriptions renew monthly until cancelled. You can cancel anytime, effective at the end of the current billing period.
 - New Premium subscriptions are covered by a 14-day money-back guarantee.
 - Prices may change; we will give you advance notice before any change affects you.
@@ -30,6 +30,7 @@ You agree not to:
 - Attempt to extract, scrape, or bulk-download source materials, model outputs, or other content by automated means.
 - Circumvent usage limits, security measures, or access controls.
 - Use the Service to generate or spread misinformation, or remove the AI-reconstruction labeling from shared content.
+- Use the Service to reconstruct, reproduce, or reassemble substantial portions of copyrighted works — including but not limited to books, speeches, letters, or other protected texts — whether by requesting extended quotations, chaining prompts to elicit successive excerpts, or any other method designed to extract copyrighted content rather than engage with the Service's interpretive and educational purpose.
 - Violate any applicable law or the rights of any third party.
 
 ## 5. Content and Intellectual Property
