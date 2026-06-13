@@ -5,26 +5,27 @@ export const revalidate = 3600;
 export const metadata = {
   title: "Pricing — Legends Library",
   description:
-    "Go beyond the basics. Get unlimited access to powerful tools, deeper analysis, and every figure in the library.",
+    "Start free. Unlock the full debate when you&apos;re ready. Ask bold questions, get cited answers, and explore how history&apos;s biggest minds might argue about today&apos;s biggest issues.",
 };
 
 const freeFeatures = [
   "6 questions per day",
-  "Access to all live figures",
-  "Source citations with every answer",
-  "Save up to 5 conversations",
-  "Standard response time",
+  "Access to available public figures",
+  "Primary-source citations",
+  "Confidence labels",
+  "Evidence vs. inference notes",
+  "Basic chat history",
 ];
 
 const premiumFeatures = [
-  "Unlimited questions*",
-  "Historical Council (multi-figure answers)",
-  "Debate Mode (figures argue it out)",
-  "Save unlimited conversations",
-  "Export to PDF",
-  "Priority response time",
-  "Early access to new features",
-  "New figures added regularly",
+  { label: "Unlimited standard questions*", comingSoon: false },
+  { label: "Historical Council Mode", comingSoon: true },
+  { label: "Debate Mode", comingSoon: true },
+  { label: "Saved conversations", comingSoon: false },
+  { label: "Shareable answer pages", comingSoon: true },
+  { label: "Export cited answers to PDF", comingSoon: true },
+  { label: "Priority access to new figures", comingSoon: false },
+  { label: "Early access to hot-topic drops", comingSoon: false },
 ];
 
 const premiumHighlights = [
@@ -34,7 +35,7 @@ const premiumHighlights = [
   },
   {
     title: "Historical Council",
-    body: "Get multiple figures' perspectives on one question, side by side.",
+    body: "Get multiple figures’ perspectives on one question, side by side.",
   },
   {
     title: "Debate Mode",
@@ -61,25 +62,27 @@ export default function PricingPage() {
       <section className="border-b border-border bg-card">
         <div className="mx-auto max-w-3xl px-6 py-16 text-center">
           <h1 className="font-display text-5xl font-bold leading-tight text-ink">
-            Unlock Deeper Historical Insight
+            Choose Your Plan
           </h1>
-          <p className="mx-auto mt-5 max-w-xl text-lg text-sub">
-            Go beyond the basics. Get unlimited access to powerful tools,
-            deeper analysis, and every figure in the library.
+          <p className="mx-auto mt-4 max-w-xl text-lg font-semibold text-sub">
+            Start free. Unlock the full debate when you&apos;re ready.
+          </p>
+          <p className="mx-auto mt-3 max-w-2xl text-base text-sub">
+            Ask bold questions, get cited answers, and explore how history&apos;s
+            biggest minds might argue about today&apos;s biggest issues.
           </p>
         </div>
       </section>
 
       {/* Plans */}
       <section className="mx-auto max-w-4xl px-6 py-16">
-        <h2 className="text-center font-display text-3xl font-bold text-ink">
-          Choose Your Plan
-        </h2>
-        <div className="mt-10 grid gap-6 md:grid-cols-2">
+        <div className="mt-0 grid gap-6 md:grid-cols-2">
           {/* Free */}
           <div className="flex flex-col rounded-2xl border border-border bg-surface p-8">
             <h3 className="font-display text-2xl font-bold text-ink">Free</h3>
-            <p className="mt-1 text-sm text-sub">Great for getting started.</p>
+            <p className="mt-1 text-sm text-sub">
+              For curious users who want to try Legends Library.
+            </p>
             <p className="mt-5">
               <span className="font-display text-5xl font-bold text-ink">
                 $0
@@ -100,7 +103,7 @@ export default function PricingPage() {
               href="/signup"
               className="mt-8 block rounded-lg border border-gold px-6 py-3 text-center font-semibold text-gold-dark transition-colors hover:bg-card"
             >
-              Get Started Free
+              Start Free
             </Link>
           </div>
 
@@ -113,21 +116,32 @@ export default function PricingPage() {
               Premium
             </h3>
             <p className="mt-1 text-sm text-sub">
-              For serious learners and curious minds.
+              For users who want more questions, deeper debates, and full access
+              to the library as it grows.
             </p>
             <p className="mt-5">
               <span className="font-display text-5xl font-bold text-ink">
                 $5
               </span>
               <span className="text-sub">/month</span>
+              <span className="ml-2 inline-block rounded-full bg-gold/10 px-2 py-0.5 text-xs font-semibold text-gold-dark">
+                Founding Member Price
+              </span>
             </p>
             <ul className="mt-6 space-y-3 text-sm text-sub">
               {premiumFeatures.map((f) => (
-                <li key={f} className="flex gap-2">
+                <li key={f.label} className="flex gap-2">
                   <span aria-hidden="true" className="text-gold">
                     ✓
                   </span>
-                  {f}
+                  <span>
+                    {f.label}
+                    {f.comingSoon && (
+                      <span className="ml-1 text-xs text-sub opacity-70">
+                        (coming soon)
+                      </span>
+                    )}
+                  </span>
                 </li>
               ))}
             </ul>
@@ -135,16 +149,17 @@ export default function PricingPage() {
               href="/api/stripe/checkout"
               className="mt-8 block rounded-lg bg-gold px-6 py-3 text-center font-semibold text-white transition-colors hover:bg-gold-dark"
             >
-              Go Premium
+              Upgrade to Premium
             </a>
-            <p className="mt-3 text-center text-xs text-sub">
-              Cancel anytime.
-            </p>
+            <p className="mt-3 text-center text-xs text-sub">Cancel anytime.</p>
           </div>
         </div>
+
+        {/* Fair-use footnote */}
         <p className="mt-6 text-center text-xs text-sub">
-          *Unlimited is subject to fair use. Generous daily bounds protect the
-          service from abuse — normal human curiosity will never hit them.
+          *Unlimited standard questions are subject to fair-use limits.
+          High-compute features like Council Mode, Debate Mode, and large exports
+          may have generous usage caps to keep the service fast and sustainable.
         </p>
       </section>
 
@@ -167,17 +182,19 @@ export default function PricingPage() {
         </div>
       </section>
 
-      {/* Privacy strip */}
+      {/* Bottom trust section */}
       <section className="border-t border-border bg-card">
         <div className="mx-auto flex max-w-4xl flex-col items-center gap-3 px-6 py-12 text-center">
           <h2 className="font-display text-xl font-bold text-ink">
-            Your Data. Your Privacy. Always.
+            No Fake Certainty. No Empty Answers.
           </h2>
           <p className="text-sm text-sub">
-            We never sell your data. Your conversations are private and secure.
+            Every plan includes citations, confidence labels, and
+            source-grounded answers. Premium gives you more ways to explore,
+            compare, debate, save, and share them.
           </p>
           <p className="mt-2 rounded-full border border-gold px-4 py-1 text-xs font-semibold uppercase tracking-wide text-gold-dark">
-            14-Day Money-Back Guarantee
+            Cancel anytime.
           </p>
         </div>
       </section>
