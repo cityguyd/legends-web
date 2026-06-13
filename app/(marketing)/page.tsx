@@ -11,15 +11,23 @@ export default function HomePage() {
   return (
     <>
       {/* Hero */}
-      <section className="border-b border-border bg-card">
-        <div className="mx-auto max-w-4xl px-6 py-20 text-center">
-          <h1 className="font-display text-5xl font-bold tracking-tight text-ink md:text-6xl">
+      <section
+        className="relative border-b border-border"
+        style={{
+          backgroundImage: "url('/images/home-hero.png')",
+          backgroundSize: "cover",
+          backgroundPosition: "center top",
+        }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/40" />
+        <div className="relative mx-auto max-w-4xl px-6 py-24 text-center">
+          <h1 className="font-display text-5xl font-bold tracking-tight text-white drop-shadow-lg md:text-6xl">
             Legends Library
           </h1>
-          <p className="mt-3 font-display text-xl italic text-gold-dark">
+          <p className="mt-3 font-display text-xl italic text-amber-200 drop-shadow">
             Hot takes, cold sources.
           </p>
-          <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-sub">
+          <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-white/90 drop-shadow">
             Ask history&apos;s greatest minds about today&apos;s most
             controversial issues. Get bold answers backed by the words they left
             behind.
@@ -27,13 +35,13 @@ export default function HomePage() {
           <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
             <Link
               href="/figures"
-              className="rounded-lg bg-gold px-6 py-3 font-semibold text-white transition-colors hover:bg-gold-dark"
+              className="rounded-lg bg-gold px-6 py-3 font-semibold text-white shadow-lg transition-colors hover:bg-gold-dark"
             >
               Ask a Bold Question →
             </Link>
             <Link
               href="/how-it-works"
-              className="rounded-lg border border-border bg-surface px-6 py-3 font-semibold text-ink transition-colors hover:border-gold"
+              className="rounded-lg border border-white/60 bg-white/10 px-6 py-3 font-semibold text-white backdrop-blur-sm transition-colors hover:bg-white/20"
             >
               How It Works
             </Link>
