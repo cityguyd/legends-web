@@ -88,6 +88,12 @@ export function FigureCard({ figure }: { figure: FigureCardFigure }) {
         ) : (
           <NotifyButton />
         )}
+        <Link
+          href={`/sources/${figure.slug}`}
+          className="mt-2 block text-xs font-semibold text-gold-dark hover:underline"
+        >
+          View Sources
+        </Link>
       </div>
     </article>
   );
