@@ -38,6 +38,7 @@ yarn-error.log*
 
 # env files (real secrets — never commit these)
 .env*
+*.env
 # but do track the example template
 !.env.example
 

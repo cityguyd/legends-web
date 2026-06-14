@@ -58,22 +58,6 @@ const premiumHighlights = [
 export default function PricingPage() {
   return (
     <>
-      {/* Hero */}
-      <section className="border-b border-border bg-card">
-        <div className="mx-auto max-w-3xl px-6 py-16 text-center">
-          <h1 className="font-display text-5xl font-bold leading-tight text-ink">
-            Choose Your Plan
-          </h1>
-          <p className="mx-auto mt-4 max-w-xl text-lg font-semibold text-sub">
-            Start free. Unlock the full debate when you&apos;re ready.
-          </p>
-          <p className="mx-auto mt-3 max-w-2xl text-base text-sub">
-            Ask bold questions, get cited answers, and explore how history&apos;s
-            biggest minds might argue about today&apos;s biggest issues.
-          </p>
-        </div>
-      </section>
-
       {/* Plans */}
       <section className="mx-auto max-w-4xl px-6 py-16">
         <div className="mt-0 grid gap-6 md:grid-cols-2">
@@ -171,7 +155,11 @@ export default function PricingPage() {
           </h2>
           <div className="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
             {premiumHighlights.map((item) => (
-              <div key={item.title} className="text-center">
+              <div key={item.title} className="flex flex-col items-center text-center">
+                <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" className="mb-3 size-5 shrink-0" aria-hidden="true">
+                  <path d="M4 10a6 6 0 1012 0A6 6 0 004 10z" stroke="#D59E3C" strokeWidth="1.5"/>
+                  <path d="M7 10l2 2 4-4" stroke="#D59E3C" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
                 <h3 className="font-display text-lg font-bold text-gold-dark">
                   {item.title}
                 </h3>

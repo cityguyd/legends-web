@@ -13,27 +13,26 @@ export default function HomePage() {
     <>
       {/* Hero */}
       <section
-        className="relative border-b border-border"
+        className="relative flex min-h-[360px] flex-col items-center justify-start border-b border-border pt-1"
         style={{
           backgroundImage: "url('/images/home-hero.png')",
           backgroundSize: "cover",
-          backgroundPosition: "center top",
+          backgroundPosition: "center center",
         }}
       >
-        <div className="absolute inset-0 bg-linear-to-b from-black/30 via-transparent to-black/40" />
-        <div className="relative mx-auto max-w-4xl px-6 py-24 text-center">
-          <h1 className="font-display text-5xl font-bold tracking-tight text-white drop-shadow-lg md:text-6xl">
-            Legends Library
-          </h1>
-          <p className="mt-3 font-display text-xl italic text-amber-200 drop-shadow">
+        <div className="relative text-center">
+        <p className="mt-0 font-display text-xl italic text-gold-dark drop-shadow">
             Hot takes, cold sources.
           </p>
-          <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-white/90 drop-shadow">
+          <h1 className="font-display text-5xl font-bold tracking-tight text-white drop-shadow md:text-6xl">
+            Legends Library
+          </h1>
+          <p className="translate-y-30 mx-auto mt-1 max-w-xl text-base leading-relaxed text-white drop-shadow">
             Ask history&apos;s greatest minds about today&apos;s most
             controversial issues. Get bold answers backed by the words they left
             behind.
           </p>
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
+          <div className="mt-35 flex flex-wrap items-center justify-center gap-4">
             <Link
               href="/figures"
               className="rounded-lg bg-gold px-6 py-3 font-semibold text-white shadow-lg transition-colors hover:bg-gold-dark"
@@ -42,7 +41,7 @@ export default function HomePage() {
             </Link>
             <Link
               href="/how-it-works"
-              className="rounded-lg border border-white/60 bg-white/10 px-6 py-3 font-semibold text-white backdrop-blur-sm transition-colors hover:bg-white/20"
+              className="rounded-lg border border-ink/30 bg-white/60 px-6 py-3 font-semibold text-ink backdrop-blur-sm transition-colors hover:bg-white/80"
             >
               How It Works
             </Link>
@@ -76,10 +75,13 @@ export default function HomePage() {
               <li
                 key={card.question}
                 className="relative flex flex-col overflow-hidden rounded-xl border border-border shadow-sm"
-                style={bgUrl ? { backgroundImage: `url('${bgUrl}')`, backgroundSize: "cover", backgroundPosition: "center" } : undefined}
+                style={{
+                  minHeight: "240px",
+                  ...(bgUrl ? { backgroundImage: `url('${bgUrl}')`, backgroundSize: "cover", backgroundPosition: "center top" } : {}),
+                }}
               >
-                {bgUrl && <div className="absolute inset-0 bg-linear-to-b from-black/50 via-black/40 to-black/60" />}
-                <div className={`relative flex flex-col p-5 h-full${bgUrl ? "" : " bg-surface"}`}>
+                {bgUrl && <div className="absolute inset-0 bg-linear-to-b from-black/40 via-black/30 to-black/60" />}
+                <div className={`relative flex flex-col p-5 h-full flex-1${bgUrl ? "" : " bg-surface"}`}>
                   <h3 className={`font-display text-lg font-bold leading-snug ${bgUrl ? "text-white" : "text-ink"}`}>
                     {card.question}
                   </h3>

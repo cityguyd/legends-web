@@ -42,25 +42,14 @@ export function FigureCard({ figure }: { figure: FigureCardFigure }) {
       )}
 
       {figure.portraitUrl ? (
-        isHeaderImage ? (
-          <div className="mb-4 -mx-5 -mt-5 h-36 overflow-hidden rounded-t-xl">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={figure.portraitUrl}
-              alt={`Portrait of ${figure.name}`}
-              className={`w-full h-full object-cover object-top${live ? "" : " opacity-60 grayscale"}`}
-            />
-          </div>
-        ) : (
-          <div className="mx-auto mb-4 size-24 overflow-hidden rounded-full border-2 border-gold/40 bg-card">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={figure.portraitUrl}
-              alt={`Portrait of ${figure.name}`}
-              className={`size-full object-cover${live ? "" : " opacity-60 grayscale"}`}
-            />
-          </div>
-        )
+        <div className="mx-auto mb-4 size-28 overflow-hidden rounded-full border-2 border-gold/40 bg-card">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={figure.portraitUrl}
+            alt={`Portrait of ${figure.name}`}
+            className={`size-full object-cover object-top${live ? "" : " opacity-60 grayscale"}`}
+          />
+        </div>
       ) : (
         <div className="mx-auto mb-4 size-24 overflow-hidden rounded-full border-2 border-gold/40 bg-card">
           <span
@@ -91,11 +80,11 @@ export function FigureCard({ figure }: { figure: FigureCardFigure }) {
         </ul>
       )}
 
-      <div className="mt-auto pt-4">
+      <div className="mt-auto pt-4 flex flex-col gap-2">
         {live ? (
           <Link
             href={`/chat/${figure.slug}`}
-            className="inline-block w-full rounded-lg bg-gold px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-gold-dark"
+            className="inline-block w-full rounded-lg bg-gold px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-gold-dark text-center"
           >
             Ask {shortName(figure)}
           </Link>
@@ -103,10 +92,10 @@ export function FigureCard({ figure }: { figure: FigureCardFigure }) {
           <NotifyButton />
         )}
         <Link
-          href={`/sources/${figure.slug}`}
-          className="mt-2 block text-xs font-semibold text-gold-dark hover:underline"
+          href={`/figures/${figure.slug}`}
+          className="inline-block w-full rounded-lg border border-border bg-surface px-4 py-1.5 text-xs font-medium text-sub transition-colors hover:border-gold hover:text-ink text-center"
         >
-          View Sources
+          More Info
         </Link>
       </div>
     </article>

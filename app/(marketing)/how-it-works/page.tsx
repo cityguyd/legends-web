@@ -1,143 +1,149 @@
-import Link from "next/link";
+import type { Metadata } from "next";
 
-export const revalidate = 3600;
-
-export const metadata = {
-  title: "How it Works — Legends Library",
+export const metadata: Metadata = {
+  title: "How It Works | Legends Library",
   description:
-    "We don't put words in dead people's mouths. We find the words they already said.",
+    "See how Legends Library builds historically accurate answers from primary sources.",
 };
-
-const differentiators = [
-  {
-    heading: "We Don’t Make History Talk from Thin Air",
-    body: "Every answer begins with a source library. When you ask a question, Legends Library searches that figure’s approved sources for relevant passages, pulls the strongest evidence, and builds an answer from those materials.",
-  },
-  {
-    heading: "Some questions have direct evidence. Others require interpretation.",
-    body: "If MLK wrote directly about nonviolence, civil disobedience, poverty, or racial justice, the answer can lean heavily on direct sources. If you ask what MLK would think about a modern movement, platform, politician, or event, the answer must say when it is making an inference. That is the difference between a hot take and a hallucination.",
-  },
-  {
-    heading: "Every answer is built to show:",
-    body: "Primary-source citations · Confidence level · Direct evidence vs. modern inference · Relevant counter-evidence when available · A warning when the source record is thin",
-  },
-];
 
 const steps = [
   {
-    title: "Ask the Question",
-    body: "Choose a figure and ask about a modern controversy, historical debate, moral question, or personal issue.",
+    title: "Your Question",
+    body: "You ask about history, policy, philosophy, or human nature — anything a historical mind could speak to.",
   },
   {
-    title: "Search the Source Library",
-    body: "The system searches that figure's approved source database for relevant speeches, letters, writings, interviews, and records.",
+    title: "Source Selection",
+    body: "We identify which primary sources, letters, speeches, and writings are most relevant to your specific question.",
   },
   {
-    title: "Pull the Evidence",
-    body: "The strongest passages are selected and organized around the issue you asked about.",
+    title: "Evidence Mining",
+    body: "Key passages are extracted and ranked by relevance, authenticity, and historical significance.",
   },
   {
-    title: "Build the Take",
-    body: "AI generates a clear answer while separating direct evidence from reasonable interpretation.",
+    title: "Perspective Building",
+    body: "The figure's documented views, context, and known positions are synthesized into a coherent perspective.",
   },
   {
-    title: "Verify the Claims",
-    body: "A second pass checks whether the answer is actually supported by the cited sources and whether the confidence level is fair.",
+    title: "Verification",
+    body: "Claims are cross-referenced against the historical record. Speculation is flagged. Sources are cited.",
   },
   {
-    title: "Deliver the Take",
-    body: "You get the answer, citations, confidence label, and notes where the evidence is limited.",
+    title: "Delivered Answer",
+    body: "You receive a response in the figure's authentic voice, grounded in what they actually believed and said.",
   },
+];
+
+const stepIcons = [
+  // Step 1: quill nib
+  <svg key="quill" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" className="size-8" aria-hidden="true">
+    <path d="M26 4C20 8 14 14 10 22L8 28l6-2c8-4 14-10 18-16L26 4z" stroke="#D59E3C" strokeWidth="1.5" strokeLinejoin="round"/>
+    <path d="M10 22c2-2 4-3 6-4" stroke="#D59E3C" strokeWidth="1.5" strokeLinecap="round"/>
+    <path d="M8 28l3-3" stroke="#D59E3C" strokeWidth="1.5" strokeLinecap="round"/>
+  </svg>,
+  // Step 2: open book
+  <svg key="book" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" className="size-8" aria-hidden="true">
+    <path d="M16 8v18M6 6c0 0 3-1 10 2M26 6c0 0-3-1-10 2" stroke="#D59E3C" strokeWidth="1.5" strokeLinecap="round"/>
+    <path d="M4 8c0-1 1-2 2-2l10 2 10-2c1 0 2 1 2 2v14c0 1-1 2-2 2l-10-2-10 2c-1 0-2-1-2-2V8z" stroke="#D59E3C" strokeWidth="1.5" strokeLinejoin="round"/>
+  </svg>,
+  // Step 3: magnifying glass
+  <svg key="magnify" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" className="size-8" aria-hidden="true">
+    <circle cx="14" cy="14" r="8" stroke="#D59E3C" strokeWidth="1.5"/>
+    <path d="M20 20l7 7" stroke="#D59E3C" strokeWidth="1.5" strokeLinecap="round"/>
+    <path d="M11 14h6M14 11v6" stroke="#D59E3C" strokeWidth="1.5" strokeLinecap="round"/>
+  </svg>,
+  // Step 4: scroll with seal
+  <svg key="scroll" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" className="size-8" aria-hidden="true">
+    <path d="M8 6h16v20H8z" stroke="#D59E3C" strokeWidth="1.5" strokeLinejoin="round"/>
+    <path d="M8 6c0-2-3-2-3 0v20c0 2 3 2 3 0M24 6c0-2 3-2 3 0v20c0 2-3 2-3 0" stroke="#D59E3C" strokeWidth="1.5"/>
+    <path d="M11 12h10M11 16h10M11 20h6" stroke="#D59E3C" strokeWidth="1.5" strokeLinecap="round"/>
+    <circle cx="21" cy="21" r="3" stroke="#D59E3C" strokeWidth="1.5"/>
+  </svg>,
+  // Step 5: balance scale
+  <svg key="scale" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" className="size-8" aria-hidden="true">
+    <path d="M16 6v20M10 26h12" stroke="#D59E3C" strokeWidth="1.5" strokeLinecap="round"/>
+    <path d="M8 10h16" stroke="#D59E3C" strokeWidth="1.5" strokeLinecap="round"/>
+    <path d="M8 10l-4 8h8l-4-8zM24 10l-4 8h8l-4-8z" stroke="#D59E3C" strokeWidth="1.5" strokeLinejoin="round"/>
+  </svg>,
+  // Step 6: torch / flame
+  <svg key="torch" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" className="size-8" aria-hidden="true">
+    <path d="M16 4c0 0-6 5-4 11 1 3 4 5 4 5s3-2 4-5c2-6-4-11-4-11z" stroke="#D59E3C" strokeWidth="1.5" strokeLinejoin="round"/>
+    <path d="M16 20v8M13 28h6" stroke="#D59E3C" strokeWidth="1.5" strokeLinecap="round"/>
+    <path d="M16 12c0 0-2 2-1 4" stroke="#D59E3C" strokeWidth="1.5" strokeLinecap="round"/>
+  </svg>,
 ];
 
 export default function HowItWorksPage() {
   return (
-    <>
+    <main>
       {/* Hero */}
-      <section className="border-b border-border bg-card">
-        <div className="mx-auto max-w-3xl px-6 py-16 text-center">
-          <h1 className="font-display text-5xl font-bold leading-tight text-ink">
-            How Legends Library Works
+      <section
+        className="relative flex min-h-[360px] items-start justify-center"
+        style={{
+          backgroundImage: `url('/images/how-it-works-hero.png')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center top',
+        }}
+      >
+        <div className="relative mx-auto max-w-3xl px-6 pt-8 text-center">
+          <h1 className="mb-4 font-serif text-4xl font-bold text-white drop-shadow-lg md:text-5xl [text-shadow:0_2px_10px_rgba(0,0,0,0.8)]">
+            How It Works
           </h1>
-          <p className="mt-3 font-display text-lg italic text-gold-dark">
-            Bold answers. Cold sources.
+          <p className="translate-y-21 text-lg text-white drop-shadow-lg [text-shadow:0_1px_6px_rgba(0,0,0,0.9)]">
+            Every answer is built from primary sources — letters, speeches, and writings — not trained guesses.
           </p>
-          <p className="mx-auto mt-5 max-w-2xl text-lg text-sub">
-            Anyone can make a chatbot pretend to be MLK, Hamilton, or Churchill.
-            That is not the point. Legends Library starts with what they
-            actually said — speeches, letters, books, interviews, and verified
-            writings — then uses AI to reconstruct how their documented ideas
-            might apply to today&apos;s most controversial questions.
-          </p>
-          <p className="mx-auto mt-4 max-w-2xl text-sub">
-            The result is not a real statement from the person. It is a
-            source-grounded take with citations, confidence labels, and clear
-            boundaries between evidence and inference.
-          </p>
-          <Link
-            href="/figures"
-            className="mt-8 inline-block rounded-lg bg-gold px-6 py-3 font-semibold text-white transition-colors hover:bg-gold-dark"
-          >
-            See It In Action →
-          </Link>
         </div>
       </section>
 
-      {/* What makes this different */}
-      <section className="mx-auto max-w-3xl px-6 py-16">
-        <h2 className="text-center font-display text-3xl font-bold tracking-wide text-ink">
-          We Don&apos;t Make History Talk from Thin Air
-        </h2>
-        <div className="mt-10 space-y-10">
-          {differentiators.map((item) => (
-            <div key={item.heading}>
-              <h3 className="font-display text-xl font-bold text-gold-dark">
-                {item.heading}
-              </h3>
-              <p className="mt-3 leading-relaxed text-sub">{item.body}</p>
+      {/* Steps */}
+      <section className="mx-auto max-w-5xl px-6 py-16">
+        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+          {steps.map((step, i) => (
+            <div key={step.title} className="flex flex-col gap-3">
+              <div className="flex items-center gap-3">
+                {stepIcons[i]}
+                <span className="font-serif text-lg font-semibold text-foreground">{step.title}</span>
+              </div>
+              <p className="text-sm leading-relaxed text-muted-foreground">{step.body}</p>
             </div>
           ))}
         </div>
       </section>
 
-      {/* 6-step process */}
+      {/* Deep explanation */}
       <section className="border-t border-border bg-surface">
-        <div className="mx-auto max-w-6xl px-6 py-16">
-          <h2 className="text-center font-display text-3xl font-bold text-ink">
-            Our 6-Step Process
-          </h2>
-          <ol className="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-            {steps.map((step, i) => (
-              <li key={step.title} className="text-center">
-                <span className="font-display text-2xl font-bold text-gold">
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-                <h3 className="mt-2 font-semibold text-ink">{step.title}</h3>
-                <p className="mt-2 text-sm leading-snug text-sub">
-                  {step.body}
-                </p>
-              </li>
-            ))}
-          </ol>
-        </div>
-      </section>
-
-      {/* Bottom section */}
-      <section className="border-t border-border bg-card">
-        <div className="mx-auto max-w-3xl px-6 py-16 text-center">
+        <div className="mx-auto max-w-3xl px-6 py-16">
           <h2 className="font-display text-3xl font-bold text-ink">
-            Every Question Gets a Response — Not Always a Confident One
+            Why Primary Sources Matter
           </h2>
-          <p className="mt-4 text-sub">
-            If the source record is strong, Legends Library gives a stronger
-            answer. If the source record is weak, the answer should say so.
-          </p>
-          <p className="mt-4 text-sub">
-            The goal is not to make history agree with us. The goal is to make
-            history argue with us — with receipts.
-          </p>
+          <div className="mt-6 space-y-5 text-base leading-relaxed text-sub">
+            <p>
+              Most AI systems are trained to sound authoritative — but Legends Library is built differently. Every answer starts with real historical documents: letters written in the heat of revolution, speeches delivered in moments of crisis, books penned across decades of hard-won experience.
+            </p>
+            <p>
+              We don&apos;t ask a model to imagine what Hamilton might say about Bitcoin. We ask it to reason through what Hamilton <em>actually wrote</em> about currency, debt, federal power, and speculation — and then apply that documented worldview to the modern question you asked.
+            </p>
+            <p>
+              The result isn&apos;t a guess. It&apos;s a synthesis: bold, grounded, and fully traceable. Every response includes a confidence label (High, Medium, or Low), a note on whether key claims come from direct evidence or reasoned inference, and citations you can actually check.
+            </p>
+            <p>
+              That means you can push back. You can ask follow-up questions. You can read the sources yourself. Legends Library treats you as someone who wants to think, not just someone who wants an answer.
+            </p>
+          </div>
+
+          <div className="mt-10 rounded-2xl border border-border bg-card p-8">
+            <h3 className="font-display text-xl font-bold text-ink">
+              What Makes a Good Question?
+            </h3>
+            <p className="mt-3 text-sm leading-relaxed text-sub">
+              The best questions for Legends Library are the ones that feel a little uncomfortable to ask out loud — questions where smart people disagree, where history is genuinely contested, or where the answer depends on whose values you hold. Think: <em>"Would MLK support affirmative action today?"</em> or <em>"Would Churchill have backed NATO intervention in Ukraine?"</em>
+            </p>
+            <p className="mt-3 text-sm leading-relaxed text-sub">
+              These questions don&apos;t have clean answers. That&apos;s exactly why we built Legends Library — to give you something more honest than a Wikipedia summary and more rigorous than a hot take.
+            </p>
+          </div>
         </div>
       </section>
-    </>
+    </main>
   );
 }
+

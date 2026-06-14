@@ -1,10 +1,9 @@
 import Link from "next/link";
 import { FigureCard } from "@/components/marketing/FigureCard";
-import { getFigures, type Figure } from "@/lib/marketing/data";
+import { getFigures } from "@/lib/marketing/data";
 import { FIGURE_HEADERS } from "@/lib/marketing/assets";
 
-// Page is dynamic (reads searchParams for filtering) so route-level revalidate
-// is inert. Data caching is handled in getFigures via unstable_cache.
+export const revalidate = 3600;
 
 export const metadata = {
   title: "Figures — Legends Library",
@@ -12,116 +11,28 @@ export const metadata = {
     "Explore the great thinkers, leaders, and visionaries whose words still shape our world.",
 };
 
-type Filters = { era?: string; category?: string; region?: string };
-
-function distinct(values: (string | null)[]): string[] {
-  return [...new Set(values.filter((v): v is string => Boolean(v)))].sort();
-}
-
-function applyFilters(figures: Figure[], filters: Filters): Figure[] {
-  return figures.filter(
-    (f) =>
-      (!filters.era || f.era === filters.era) &&
-      (!filters.region || f.region === filters.region) &&
-      (!filters.category || f.category.includes(filters.category))
-  );
-}
-
-function chipHref(filters: Filters, patch: Filters): string {
-  const next = { ...filters, ...patch };
-  const params = new URLSearchParams();
-  if (next.era) params.set("era", next.era);
-  if (next.category) params.set("category", next.category);
-  if (next.region) params.set("region", next.region);
-  const qs = params.toString();
-  return qs ? `/figures?${qs}` : "/figures";
-}
-
-function FilterChips({
-  label,
-  values,
-  active,
-  filters,
-  param,
-}: {
-  label: string;
-  values: string[];
-  active?: string;
-  filters: Filters;
-  param: keyof Filters;
-}) {
-  if (values.length === 0) return null;
-  return (
-    <div className="flex flex-wrap items-center gap-2">
-      <span className="text-xs font-semibold uppercase tracking-wide text-sub">
-        {label}
-      </span>
-      <Link
-        href={chipHref(filters, { [param]: undefined })}
-        className={`rounded-full border px-3 py-1 text-sm transition-colors ${
-          !active
-            ? "border-gold bg-gold text-white"
-            : "border-border bg-surface text-ink hover:border-gold"
-        }`}
-      >
-        All
-      </Link>
-      {values.map((value) => (
-        <Link
-          key={value}
-          href={chipHref(filters, { [param]: value })}
-          className={`rounded-full border px-3 py-1 text-sm transition-colors ${
-            active === value
-              ? "border-gold bg-gold text-white"
-              : "border-border bg-surface text-ink hover:border-gold"
-          }`}
-        >
-          {value}
-        </Link>
-      ))}
-    </div>
-  );
-}
-
-export default async function FiguresPage({
-  searchParams,
-}: {
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
-}) {
-  const params = await searchParams;
-  const filters: Filters = {
-    era: typeof params.era === "string" ? params.era : undefined,
-    category: typeof params.category === "string" ? params.category : undefined,
-    region: typeof params.region === "string" ? params.region : undefined,
-  };
-
+export default async function FiguresPage() {
   const figures = await getFigures();
-  const filtered = applyFilters(figures, filters);
-
-  const eras = distinct(figures.map((f) => f.era));
-  const regions = distinct(figures.map((f) => f.region));
-  const categories = distinct(figures.flatMap((f) => f.category));
 
   return (
     <>
       {/* Hero */}
       <section
-        className="relative border-b border-border"
+        className="relative flex min-h-[360px] items-start justify-center border-b border-border"
         style={{
           backgroundImage: "url('/images/meet-the-minds.png')",
           backgroundSize: "cover",
-          backgroundPosition: "center 20%",
+          backgroundPosition: "center top",
         }}
       >
-        <div className="absolute inset-0 bg-linear-to-b from-black/50 via-black/30 to-black/50" />
-        <div className="relative mx-auto max-w-3xl px-6 py-20 text-center">
-          <h1 className="font-display text-5xl font-bold text-white drop-shadow-lg">
+        <div className="relative mx-auto max-w-3xl px-6 pt-10 text-center">
+          <h1 className="font-display text-5xl font-bold text-white drop-shadow-lg [text-shadow:0_2px_10px_rgba(0,0,0,0.8)]">
             Meet the Minds
           </h1>
-          <p className="mt-3 font-display text-lg italic text-amber-200 drop-shadow">
+          <p className="mt-3 font-display text-lg italic text-white drop-shadow-lg [text-shadow:0_1px_6px_rgba(0,0,0,0.9)]">
             Where history&apos;s biggest names meet today&apos;s biggest arguments.
           </p>
-          <p className="mx-auto mt-5 max-w-xl text-white/85 drop-shadow">
+          <p className="translate-y-30 mx-auto mt-5 max-w-xl text-white drop-shadow-lg [text-shadow:0_1px_6px_rgba(0,0,0,0.9)]">
             Explore the figures whose ideas built movements, nations,
             revolutions, and controversies. Ask them anything — and get
             answers grounded in primary sources.
@@ -129,41 +40,15 @@ export default async function FiguresPage({
         </div>
       </section>
 
-      {/* Filters + roster */}
+      {/* Roster */}
       <section className="mx-auto max-w-6xl px-6 py-12">
-        <div className="space-y-3">
-          <FilterChips
-            label="Era"
-            values={eras}
-            active={filters.era}
-            filters={filters}
-            param="era"
-          />
-          <FilterChips
-            label="Category"
-            values={categories}
-            active={filters.category}
-            filters={filters}
-            param="category"
-          />
-          <FilterChips
-            label="Region"
-            values={regions}
-            active={filters.region}
-            filters={filters}
-            param="region"
-          />
-        </div>
-
-        {filtered.length === 0 ? (
+        {figures.length === 0 ? (
           <p className="mt-10 rounded-xl border border-border bg-surface p-10 text-center text-sub">
-            {figures.length === 0
-              ? "The library is being stocked. New figures arrive soon."
-              : "No figures match those filters yet."}
+            The library is being stocked. New figures arrive soon.
           </p>
         ) : (
-          <ul className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {filtered.map((figure) => (
+          <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {figures.map((figure) => (
               <li key={figure.slug}>
                 <FigureCard
                   figure={{

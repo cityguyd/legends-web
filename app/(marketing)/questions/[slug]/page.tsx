@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ConfidenceBadge } from "@/components/chat/ConfidenceBadge";
+import { TypewriterAnswer } from "@/components/chat/TypewriterAnswer";
 import { shortName } from "@/components/marketing/FigureCard";
+import { FIGURE_HEADERS } from "@/lib/marketing/assets";
 import {
   getFeaturedQuestionBySlug,
   getFeaturedQuestions,
@@ -39,63 +40,20 @@ function ResponseBlock({
   figure: FigureDetail | undefined;
 }) {
   const name = figure?.name ?? response.figureName ?? "Unknown figure";
-  const paragraphs = response.answer.split(/\n{2,}/).filter(Boolean);
+  const portraitUrl = figure
+    ? (figure.portrait_url ?? FIGURE_HEADERS[figure.slug] ?? null)
+    : null;
 
   return (
     <article className="rounded-xl border border-border bg-surface p-6 shadow-sm">
-      {/* Figure attribution row */}
-      <div className="flex items-center gap-3 border-b border-border pb-4">
-        <div className="size-12 shrink-0 overflow-hidden rounded-full border-2 border-gold/40 bg-card">
-          {figure?.portrait_url ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={figure.portrait_url}
-              alt={`Portrait of ${name}`}
-              className="size-full object-cover"
-            />
-          ) : (
-            <span
-              aria-hidden="true"
-              className="flex size-full items-center justify-center font-display text-xl text-gold"
-            >
-              {name.charAt(0)}
-            </span>
-          )}
-        </div>
-        <div>
-          {figure ? (
-            <Link
-              href={`/figures/${figure.slug}`}
-              className="font-display text-lg font-bold text-ink hover:text-gold-dark"
-            >
-              {name}
-            </Link>
-          ) : (
-            <p className="font-display text-lg font-bold text-ink">{name}</p>
-          )}
-          <p className="text-xs text-sub">
-            An AI reconstruction grounded in primary sources — not the real
-            person.
-          </p>
-        </div>
-      </div>
-
-      {/* Cached answer body */}
-      <div className="mt-4 space-y-4 leading-relaxed text-ink">
-        {paragraphs.map((paragraph, i) => (
-          <p key={i}>{paragraph}</p>
-        ))}
-      </div>
-
-      <div className="mt-5 flex flex-wrap items-center gap-3 border-t border-border pt-4">
-        <ConfidenceBadge tier={response.confidence} />
-        {response.citations.length > 0 && (
-          <span className="text-sm text-sub">
-            Verified against {response.citations.length}{" "}
-            {response.citations.length === 1 ? "source" : "sources"}
-          </span>
-        )}
-      </div>
+      <TypewriterAnswer
+        text={response.answer}
+        figureSlug={figure?.slug ?? ""}
+        figureName={name}
+        portraitUrl={portraitUrl}
+        confidence={response.confidence}
+        citationsCount={response.citations.length}
+      />
     </article>
   );
 }

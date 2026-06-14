@@ -3,13 +3,11 @@ import { MobileMenu } from "@/components/marketing/MobileMenu";
 
 const navLinks = [
   { href: "/", label: "Home" },
+  { href: "/questions", label: "Hot Questions" },
   { href: "/figures", label: "Figures" },
   { href: "/how-it-works", label: "How it Works" },
-  { href: "/debates", label: "Debates" },
-  { href: "/council", label: "Council" },
-  { href: "/questions", label: "Hot Questions" },
-  { href: "/sources", label: "Sources" },
   { href: "/pricing", label: "Pricing" },
+  { href: "/about", label: "About" },
 ];
 
 export default function MarketingLayout({

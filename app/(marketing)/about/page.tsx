@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 
 export const revalidate = 3600;
 
@@ -35,24 +35,21 @@ export default function AboutPage() {
   return (
     <>
       {/* Hero */}
-      <section className="border-b border-border bg-card">
-        <div className="mx-auto max-w-3xl px-6 py-16 text-center">
-          <h1 className="font-display text-5xl font-bold leading-tight text-ink">
+      <section
+        className="relative flex min-h-[380px] items-center justify-center overflow-hidden"
+        style={{
+          backgroundImage: `url('/images/about-hero.png')`,
+          backgroundSize: '100% 100%',
+          backgroundPosition: 'center 30%',
+        }}
+      >
+        <div className="absolute inset-0 bg-linear-to-b from-black/60 via-black/40 to-black/70" />
+        <div className="relative mx-auto max-w-3xl px-6 py-20 text-center">
+          <h1 className="mb-4 font-serif text-4xl font-bold text-white md:text-5xl">
             About Legends Library
           </h1>
-          <p className="mt-4 font-display text-lg italic text-gold-dark">
-            History never stopped talking.
-            <br />
-            We just forgot how to listen.
-          </p>
-          <p className="mx-auto mt-6 max-w-2xl text-lg text-sub">
-            Legends Library lets you ask history&apos;s most influential figures
-            about the questions people are still fighting over today — power,
-            race, money, war, faith, freedom, technology, and the future.
-          </p>
-          <p className="mx-auto mt-4 max-w-2xl text-lg text-sub">
-            We are not building fake historical roleplay. We are building the
-            most entertaining way to argue with primary sources.
+          <p className="text-lg text-amber-100/90">
+            History's greatest minds, available to think alongside you.
           </p>
         </div>
       </section>
@@ -161,3 +158,4 @@ export default function AboutPage() {
     </>
   );
 }
+

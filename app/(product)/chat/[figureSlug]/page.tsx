@@ -1,4 +1,5 @@
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
+import Link from "next/link";
 import { ChatThread } from "@/components/chat/ChatThread";
 import { Sidebar } from "@/components/chat/Sidebar";
 import { listConversations } from "@/lib/actions/conversations";
@@ -25,9 +26,31 @@ export default async function ChatPage({ params, searchParams }: Props) {
 
   const figure = await getFigureBySlug(figureSlug);
   if (!figure) notFound();
-  // Chat is open only for launched figures with a ready corpus.
+
+  // Not yet live — show a "Going Live Soon" holding page instead of redirecting.
   if (!isLive(figure) || !figure.min_corpus_ok) {
-    redirect(`/figures/${figure.slug}`);
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-bg px-6 text-center">
+        <div className="max-w-md">
+          <span className="inline-block rounded-full border border-gold/40 bg-card px-3 py-1 text-xs font-semibold uppercase tracking-wide text-gold-dark">
+            Going Live Soon
+          </span>
+          <h1 className="mt-4 font-display text-3xl font-bold text-ink">
+            {figure.name} is almost ready
+          </h1>
+          <p className="mt-3 text-sub">
+            We&apos;re finishing up {figure.name}&apos;s source library to make sure
+            every answer is grounded in their actual words. Check back soon.
+          </p>
+          <Link
+            href="/figures"
+            className="mt-8 inline-block rounded-lg bg-gold px-6 py-3 font-semibold text-white transition-colors hover:bg-gold-dark"
+          >
+            Browse Live Figures →
+          </Link>
+        </div>
+      </div>
+    );
   }
 
   const supabase = await createClient();
