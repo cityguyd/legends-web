@@ -5,21 +5,15 @@ import { SourceCard } from "@/components/marketing/SourceCard";
 import { NotifyButton } from "@/components/marketing/NotifyButton";
 import {
   getFigureBySlug,
-  getFigures,
   getFeaturedQuestionsForFigure,
   getSourcesForFigure,
   isLive,
 } from "@/lib/marketing/data";
+import { FIGURE_HEADERS } from "@/lib/marketing/assets";
 
-export const revalidate = 3600;
+export const revalidate = 300;
 
 type Params = { params: Promise<{ slug: string }> };
-
-export async function generateStaticParams() {
-  // Empty at build time without DB env — pages then render on demand via ISR.
-  const figures = await getFigures();
-  return figures.map((figure) => ({ slug: figure.slug }));
-}
 
 export async function generateMetadata({ params }: Params) {
   const { slug } = await params;
@@ -50,12 +44,12 @@ export default async function FigureProfilePage({ params }: Params) {
       <section className="border-b border-border bg-card">
         <div className="mx-auto max-w-3xl px-6 py-16 text-center">
           <div className="mx-auto mb-6 size-32 overflow-hidden rounded-full border-2 border-gold/40 bg-surface">
-            {figure.portrait_url ? (
+            {(figure.portrait_url ?? FIGURE_HEADERS[figure.slug]) ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
-                src={figure.portrait_url}
+                src={figure.portrait_url ?? FIGURE_HEADERS[figure.slug]}
                 alt={`Portrait of ${figure.name}`}
-                className="size-full object-cover"
+                className="size-full object-cover object-top"
               />
             ) : (
               <span
