@@ -18,12 +18,12 @@ const STYLE = `Premium archival portrait in a soft sepia pencil-and-ink sketch s
 
 const IMAGES = [
   {
-    file: 'header-lincoln.png',
-    prompt: `Abraham Lincoln, 16th President of the United States (1809–1865). ${STYLE} Lincoln in a period frock coat, white shirt and dark bow tie, solemn thoughtful expression, his characteristic gaunt bearded face and tall brow. Behind him, very faintly sketched in pale sepia, the dome of the United States Capitol and a soft landscape, fading into a plain cream ivory background with a soft circular vignette at the edges.`,
+    file: 'header-franklin.png',
+    prompt: `Benjamin Franklin, American Founding Father, printer, inventor and statesman (1706–1790). ${STYLE} Franklin in an 18th-century coat, with his characteristic high balding forehead, long hair to the shoulders and small oval spectacles, calm wise expression. Behind him, very faintly sketched in pale sepia, a printing press and a kite-and-key suggesting his experiments, fading into a plain cream ivory background with a soft circular vignette at the edges.`,
   },
   {
-    file: 'header-douglass.png',
-    prompt: `Frederick Douglass, American abolitionist and statesman (1818–1895). ${STYLE} Douglass in a formal 19th-century frock coat and cravat, resolute determined expression, his distinctive full upswept mane of hair and full beard. Behind him, very faintly sketched in pale sepia, a lectern and classical columns suggesting an oratory hall, fading into a plain cream ivory background with a soft circular vignette at the edges.`,
+    file: 'header-roosevelt.png',
+    prompt: `Theodore Roosevelt, 26th President of the United States (1858–1919). ${STYLE} Roosevelt in a period suit, with his characteristic bushy mustache and pince-nez spectacles, vigorous determined expression. Behind him, very faintly sketched in pale sepia, rugged mountains and a national-park landscape suggesting his conservationism, fading into a plain cream ivory background with a soft circular vignette at the edges.`,
   },
 ];
 
