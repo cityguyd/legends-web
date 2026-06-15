@@ -120,7 +120,7 @@ export default function HowItWorksPage() {
               Most AI systems are trained to sound authoritative — but Legends Library is built differently. Every answer starts with real historical documents: letters written in the heat of revolution, speeches delivered in moments of crisis, books penned across decades of hard-won experience.
             </p>
             <p>
-              We don&apos;t ask a model to imagine what Hamilton might say about Bitcoin. We ask it to reason through what Hamilton <em>actually wrote</em> about currency, debt, federal power, and speculation — and then apply that documented worldview to the modern question you asked.
+              We don&apos;t ask a model to imagine what Franklin might say about Bitcoin. We ask it to reason through what Franklin <em>actually wrote</em> about paper money, thrift, credit, and speculation — and then apply that documented worldview to the modern question you asked.
             </p>
             <p>
               The result isn&apos;t a guess. It&apos;s a synthesis: bold, grounded, and fully traceable. Every response includes a confidence label (High, Medium, or Low), a note on whether key claims come from direct evidence or reasoned inference, and citations you can actually check.
@@ -135,7 +135,7 @@ export default function HowItWorksPage() {
               What Makes a Good Question?
             </h3>
             <p className="mt-3 text-sm leading-relaxed text-sub">
-              The best questions for Legends Library are the ones that feel a little uncomfortable to ask out loud — questions where smart people disagree, where history is genuinely contested, or where the answer depends on whose values you hold. Think: <em>"Would MLK support affirmative action today?"</em> or <em>"Would Churchill have backed NATO intervention in Ukraine?"</em>
+              The best questions for Legends Library are the ones that feel a little uncomfortable to ask out loud — questions where smart people disagree, where history is genuinely contested, or where the answer depends on whose values you hold. Think: <em>&quot;Would MLK support affirmative action today?&quot;</em> or <em>&quot;Would Theodore Roosevelt have backed military intervention in Ukraine?&quot;</em>
             </p>
             <p className="mt-3 text-sm leading-relaxed text-sub">
               These questions don&apos;t have clean answers. That&apos;s exactly why we built Legends Library — to give you something more honest than a Wikipedia summary and more rigorous than a hot take.

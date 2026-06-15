@@ -89,7 +89,7 @@ export function FigureCard({ figure }: { figure: FigureCardFigure }) {
             Ask {shortName(figure)}
           </Link>
         ) : (
-          <NotifyButton />
+          <NotifyButton figureSlug={figure.slug} />
         )}
         <Link
           href={`/figures/${figure.slug}`}

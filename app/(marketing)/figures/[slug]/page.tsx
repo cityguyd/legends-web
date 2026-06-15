@@ -93,6 +93,7 @@ export default async function FigureProfilePage({ params }: Params) {
               </Link>
             ) : (
               <NotifyButton
+                figureSlug={figure.slug}
                 label={`Notify me when ${shortName(figure)} arrives`}
                 className="rounded-lg border border-border bg-surface px-8 py-3 font-semibold text-sub transition-colors hover:bg-card"
               />

@@ -30,6 +30,7 @@ export function FigureHeader({
   onVoiceModeChange: (mode: VoiceMode) => void;
 }) {
   const bgUrl = FIGURE_HEADERS[figure.slug];
+  const portraitUrl = figure.portraitUrl ?? bgUrl ?? null;
 
   return (
     <header
@@ -51,10 +52,10 @@ export function FigureHeader({
       <div className="relative">
         <div className="mx-auto flex max-w-3xl items-center gap-4 px-4 py-3">
           <div className="size-11 shrink-0 overflow-hidden rounded-full border-2 border-gold/40 bg-card">
-            {figure.portraitUrl ? (
+            {portraitUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
-                src={figure.portraitUrl}
+                src={portraitUrl}
                 alt={`Portrait of ${figure.name}`}
                 className="size-full object-cover"
               />

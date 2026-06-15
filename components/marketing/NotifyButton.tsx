@@ -2,8 +2,11 @@
 
 import { useState } from "react";
 import { LimitModal } from "@/components/chat/LimitModal";
+import { notifyMe } from "@/lib/actions/notify";
 
 interface NotifyButtonProps {
+  /** Slug of the Coming Soon figure this signup is for. */
+  figureSlug: string;
   label?: string;
   className?: string;
 }
@@ -11,12 +14,25 @@ interface NotifyButtonProps {
 /**
  * Client component for "Coming Soon" figures.
  * Renders a button that opens the notify modal; keeps FigureCard server-safe.
+ * On submit it persists the email via the `notifyMe` server action.
  */
 export function NotifyButton({
+  figureSlug,
   label = "Notify me",
   className,
 }: NotifyButtonProps) {
   const [open, setOpen] = useState(false);
+
+  async function handleNotifySubmit(email: string) {
+    try {
+      await notifyMe(figureSlug, email);
+    } catch (err) {
+      // The modal optimistically shows success, so a rare failure (network/DB
+      // blip) is logged rather than silently swallowed — never the old
+      // behaviour of discarding the email with a fake confirmation.
+      console.error("Notify signup failed", err);
+    }
+  }
 
   return (
     <>
@@ -30,7 +46,12 @@ export function NotifyButton({
       >
         {label}
       </button>
-      <LimitModal kind="notify" open={open} onClose={() => setOpen(false)} />
+      <LimitModal
+        kind="notify"
+        open={open}
+        onClose={() => setOpen(false)}
+        onNotifySubmit={handleNotifySubmit}
+      />
     </>
   );
 }

@@ -6,7 +6,7 @@ AI Reconstructions. Not Real Statements.
 
 Legends Library creates source-grounded AI interpretations of how historical and public figures may have reasoned about modern questions. These outputs are not real statements, endorsements, communications, or authorized messages from the people depicted.
 
-When we use phrases like "Ask MLK" or "What would Hamilton say?", that language is shorthand for a source-grounded AI reconstruction based on available writings, speeches, interviews, letters, books, and other approved materials.
+When we use phrases like "Ask MLK" or "What would Lincoln say?", that language is shorthand for a source-grounded AI reconstruction based on available writings, speeches, interviews, letters, books, and other approved materials.
 
 Legends Library is not affiliated with, endorsed by, sponsored by, or officially connected to any estate, foundation, institution, campaign, publisher, family, or rights holder unless explicitly stated.
 
