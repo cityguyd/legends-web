@@ -13,6 +13,7 @@ export const FIGURE_HEADERS: Record<string, string> = {
   "thomas-jefferson": "/images/figures/header-jefferson.png",
   "george-washington": "/images/figures/header-washington.png",
   "martin-luther-king": "/images/figures/header-mlk.png",
+  "winston-churchill": "/images/figures/header-churchill.png",
   "charlie-kirk": "/images/figures/header-charlie-kirk.png",
   "jesus-of-nazareth": "/images/figures/header-jesus.png",
   "jesus": "/images/figures/header-jesus.png",
