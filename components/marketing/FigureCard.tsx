@@ -35,7 +35,7 @@ export function FigureCard({ figure }: { figure: FigureCardFigure }) {
   const isHeaderImage = figure.portraitUrl?.startsWith("/images/figures/") ?? false;
 
   return (
-    <article className="relative flex h-full flex-col rounded-xl border border-border bg-surface p-5 text-center shadow-sm">
+    <article className="relative flex h-full w-full flex-col rounded-xl border border-border bg-surface p-5 text-center shadow-sm">
       {!live && (
         <span className="absolute right-3 top-3 rounded-full bg-bubble px-2.5 py-0.5 text-xs font-medium text-sub">
           Coming Soon
