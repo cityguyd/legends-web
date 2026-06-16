@@ -6,9 +6,14 @@ import { FIGURE_HEADERS } from "@/lib/marketing/assets";
 export const revalidate = 3600;
 
 export const metadata = {
-  title: "Figures — Legends Library",
+  title: "Figures",
   description:
     "Explore the great thinkers, leaders, and visionaries whose words still shape our world.",
+  openGraph: {
+    title: 'Figures — Legends Library',
+    url: '/figures',
+  },
+  twitter: { title: 'Figures — Legends Library' },
 };
 
 export default async function FiguresPage() {
@@ -49,7 +54,7 @@ export default async function FiguresPage() {
         ) : (
           <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {figures.map((figure) => (
-              <li key={figure.slug}>
+              <li key={figure.slug} className="flex">
                 <FigureCard
                   figure={{
                     slug: figure.slug,

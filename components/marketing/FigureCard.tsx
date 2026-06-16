@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { isLive } from "@/lib/marketing/data";
 import { NotifyButton } from "./NotifyButton";
@@ -34,7 +35,7 @@ export function FigureCard({ figure }: { figure: FigureCardFigure }) {
   const isHeaderImage = figure.portraitUrl?.startsWith("/images/figures/") ?? false;
 
   return (
-    <article className="relative flex flex-col rounded-xl border border-border bg-surface p-5 text-center shadow-sm">
+    <article className="relative flex h-full flex-col rounded-xl border border-border bg-surface p-5 text-center shadow-sm">
       {!live && (
         <span className="absolute right-3 top-3 rounded-full bg-bubble px-2.5 py-0.5 text-xs font-medium text-sub">
           Coming Soon
@@ -43,15 +44,16 @@ export function FigureCard({ figure }: { figure: FigureCardFigure }) {
 
       {figure.portraitUrl ? (
         <div className="mx-auto mb-4 size-28 overflow-hidden rounded-full border-2 border-gold/40 bg-card">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <Image
             src={figure.portraitUrl}
             alt={`Portrait of ${figure.name}`}
+            width={112}
+            height={112}
             className={`size-full object-cover object-top${live ? "" : " opacity-60 grayscale"}`}
           />
         </div>
       ) : (
-        <div className="mx-auto mb-4 size-24 overflow-hidden rounded-full border-2 border-gold/40 bg-card">
+        <div className="mx-auto mb-4 size-28 overflow-hidden rounded-full border-2 border-gold/40 bg-card">
           <span
             aria-hidden="true"
             className="flex size-full items-center justify-center font-display text-2xl text-gold"
