@@ -25,6 +25,11 @@ export interface ChatMessage {
   confidence?: ConfidenceTier;
   /** Context chip label surfaced by the engine (Task 13 renders this) */
   contextChip?: string;
+  /** Set when the engine drew on secondary/biographical sources */
+  sourceWarning?: string;
+  /** Set when the engine fell back to Tier 3 LLM + sources it cited */
+  tier3Warning?: string;
+  tier3Sources?: string[];
 }
 
 export type ChatStatus =
@@ -46,6 +51,9 @@ export interface StreamAccumulator {
   pendingCitations: Citation[];
   pendingConfidence: ConfidenceTier;
   contextChip: string | null;
+  sourceWarning: string | null;
+  tier3Warning: string | null;
+  tier3Sources: string[];
   readyToReveal: boolean;
 }
 
@@ -55,6 +63,9 @@ export function makeChatState(): StreamAccumulator {
     pendingCitations: [],
     pendingConfidence: "inferred",
     contextChip: null,
+    sourceWarning: null,
+    tier3Warning: null,
+    tier3Sources: [],
     readyToReveal: false,
   };
 }
@@ -95,6 +106,24 @@ export function applyEvent(
       return {
         ...state,
         contextChip: typeof label === "string" ? label : null,
+      };
+    }
+
+    case "source_warning": {
+      const message = d["message"];
+      return {
+        ...state,
+        sourceWarning: typeof message === "string" ? message : null,
+      };
+    }
+
+    case "tier3_warning": {
+      const message = d["message"];
+      const sources = Array.isArray(d["sources"]) ? d["sources"] : [];
+      return {
+        ...state,
+        tier3Warning: typeof message === "string" ? message : null,
+        tier3Sources: sources,
       };
     }
 

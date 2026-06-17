@@ -17,6 +17,9 @@ export interface ResponseCardMessage {
   citations?: EvidenceCitation[];
   confidence?: string;
   contextChip?: string;
+  sourceWarning?: string;
+  tier3Warning?: string;
+  tier3Sources?: string[];
 }
 
 export function ResponseCard({
@@ -76,6 +79,31 @@ export function ResponseCard({
           It is an AI-generated interpretation based on cited source material.
         </p>
       </details>
+      {message.tier3Warning && (
+        <div
+          role="note"
+          className="mt-3 flex items-start gap-2 rounded-lg border border-blue-300/60 bg-blue-50/80 px-3 py-2 text-xs text-blue-800 dark:border-blue-600/40 dark:bg-blue-900/20 dark:text-blue-200"
+        >
+          <span aria-hidden="true" className="mt-px shrink-0">ℹ</span>
+          <div>
+            <p className="font-medium">{message.tier3Warning}</p>
+            {message.tier3Sources && message.tier3Sources.length > 0 && (
+              <p className="mt-1 text-xs opacity-90">
+                Sources cited: {message.tier3Sources.join("; ")}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+      {message.sourceWarning && (
+        <div
+          role="note"
+          className="mt-3 flex items-start gap-2 rounded-lg border border-amber-300/60 bg-amber-50/80 px-3 py-2 text-xs text-amber-800 dark:border-amber-600/40 dark:bg-amber-900/20 dark:text-amber-300"
+        >
+          <span aria-hidden="true" className="mt-px shrink-0">⚠</span>
+          <span>{message.sourceWarning}</span>
+        </div>
+      )}
       <p className="mt-2 whitespace-pre-wrap leading-relaxed text-ink">
         {message.text}
       </p>

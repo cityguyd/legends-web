@@ -187,6 +187,9 @@ export function useChatStream({
                 citations: acc.pendingCitations,
                 confidence: acc.pendingConfidence,
                 contextChip: acc.contextChip ?? undefined,
+                sourceWarning: acc.sourceWarning ?? undefined,
+                tier3Warning: acc.tier3Warning ?? undefined,
+                tier3Sources: acc.tier3Sources.length > 0 ? acc.tier3Sources : undefined,
               };
             }
             return updated;
