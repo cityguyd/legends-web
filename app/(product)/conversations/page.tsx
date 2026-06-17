@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ProductHeader } from "@/components/product/ProductHeader";
+import { ShareButton } from "@/components/product/ShareButton";
 import {
   deleteConversation,
   listConversations,
@@ -85,6 +86,18 @@ export default async function ConversationsPage() {
                       Continue →
                     </Link>
                   )}
+                  <ShareButton
+                    conversationId={conversation.id}
+                    initialIsShared={conversation.isShared}
+                  />
+                  <a
+                    href={`/conversations/${conversation.id}/print`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm font-semibold text-sub hover:text-gold-dark hover:underline"
+                  >
+                    PDF
+                  </a>
                   <form action={deleteConversation.bind(null, conversation.id)}>
                     <button
                       type="submit"

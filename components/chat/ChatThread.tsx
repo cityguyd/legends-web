@@ -14,6 +14,12 @@ import { SaveConversationButton } from "./SaveConversationButton";
 const FREE_DAILY_SIGNED_IN = 6;
 const FREE_DAILY_ANON = 3;
 
+/** Slugs whose refusals use Scripture-flavoured "Outside the Record" copy. */
+const FAITH_FIGURE_SLUGS = new Set(["jesus-of-nazareth", "jesus"]);
+function isFaithFigure(slug: string): boolean {
+  return FAITH_FIGURE_SLUGS.has(slug);
+}
+
 /** Pixels of slack at the bottom before we consider the user "unpinned". */
 const PINNED_THRESHOLD = 60;
 
@@ -38,6 +44,20 @@ export function ChatThread({
     figureName: figure.name,
     voiceMode,
   });
+
+  // "Ask this" on a refusal card prefills (never auto-sends) the composer.
+  const [prefill, setPrefill] = useState<{ value: string; nonce: number } | null>(
+    null
+  );
+  const askAdjacent = useCallback((question: string) => {
+    setPrefill((prev) => ({ value: question, nonce: (prev?.nonce ?? 0) + 1 }));
+  }, []);
+
+  // Faith figures decline with "Outside the Record"; historical figures with
+  // "Beyond My Time" (they couldn't have known a modern topic).
+  const refusalHeading = isFaithFigure(figure.slug)
+    ? "Outside the Record"
+    : "Beyond My Time";
 
   // Derived LimitModal state — open whenever status is "limited" and the user
   // hasn't dismissed that specific status object yet.
@@ -137,6 +157,14 @@ export function ChatThread({
                   message={message}
                   tier={copyTier}
                   onCopied={() => setToastVisible(true)}
+                  refusalHeading={refusalHeading}
+                  onAskAdjacent={askAdjacent}
+                  figureSlug={figure.slug}
+                  question={
+                    messages[index - 1]?.role === "user"
+                      ? messages[index - 1].text
+                      : undefined
+                  }
                 />
               )
             )}
@@ -173,6 +201,7 @@ export function ChatThread({
           disabled={busy}
           remainingLabel={remainingLabel}
           initialValue={initialQuestion}
+          prefill={prefill}
         />
       </div>
 

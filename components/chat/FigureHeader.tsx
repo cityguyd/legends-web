@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { FIGURE_HEADERS } from "@/lib/marketing/assets";
 
 export type VoiceMode = "historical" | "modern";
@@ -53,10 +54,12 @@ export function FigureHeader({
         <div className="mx-auto flex max-w-3xl items-center gap-4 px-4 py-3">
           <div className="size-11 shrink-0 overflow-hidden rounded-full border-2 border-gold/40 bg-card">
             {portraitUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
+              <Image
                 src={portraitUrl}
                 alt={`Portrait of ${figure.name}`}
+                width={44}
+                height={44}
+                priority
                 className="size-full object-cover"
               />
             ) : (

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { TypewriterAnswer } from "@/components/chat/TypewriterAnswer";
 import { shortName } from "@/components/marketing/FigureCard";
+import { ShareTake } from "@/components/marketing/ShareTake";
 import { FIGURE_HEADERS } from "@/lib/marketing/assets";
 import {
   getFeaturedQuestionBySlug,
@@ -25,10 +26,16 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: Params) {
   const { slug } = await params;
   const question = await getFeaturedQuestionBySlug(slug);
-  if (!question) return { title: "Question not found — Legends Library" };
+  if (!question) return { title: "Question not found" };
   return {
-    title: `${question.question} — Legends Library`,
+    title: question.question,
     description: `How history's greatest minds answer: "${question.question}" — AI reconstructions grounded in primary sources.`,
+    openGraph: {
+      title: `${question.question} — Legends Library`,
+      description: `How history's greatest minds answer: "${question.question}"`,
+      url: `/questions/${slug}`,
+    },
+    twitter: { title: `${question.question} — Legends Library` },
   };
 }
 
@@ -93,6 +100,14 @@ export default async function QuestionAnalysisPage({ params }: Params) {
         <h1 className="mt-4 font-display text-4xl font-bold leading-tight text-ink">
           {question.question}
         </h1>
+        <ShareTake
+          question={question.question}
+          figureName={
+            figureById.get(question.responses[0]?.figureId ?? "")?.name ??
+            question.responses[0]?.figureName ??
+            undefined
+          }
+        />
       </div>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-[1fr_320px]">

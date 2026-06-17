@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { shortName } from "@/components/marketing/FigureCard";
@@ -18,12 +19,18 @@ type Params = { params: Promise<{ slug: string }> };
 export async function generateMetadata({ params }: Params) {
   const { slug } = await params;
   const figure = await getFigureBySlug(slug);
-  if (!figure) return { title: "Figure not found — Legends Library" };
+  if (!figure) return { title: "Figure not found" };
   return {
-    title: `${figure.name} — Legends Library`,
+    title: figure.name,
     description:
       figure.tagline ??
       `Ask ${figure.name} anything — answers grounded in their primary sources.`,
+    openGraph: {
+      title: `${figure.name} — Legends Library`,
+      description: figure.tagline ?? `Ask ${figure.name} anything.`,
+      url: `/figures/${slug}`,
+    },
+    twitter: { title: `${figure.name} — Legends Library` },
   };
 }
 
@@ -40,15 +47,28 @@ export default async function FigureProfilePage({ params }: Params) {
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Person",
+            "name": figure.name,
+            "description": figure.tagline ?? undefined,
+          }),
+        }}
+      />
       {/* Hero */}
       <section className="border-b border-border bg-card">
         <div className="mx-auto max-w-3xl px-6 py-16 text-center">
           <div className="mx-auto mb-6 size-32 overflow-hidden rounded-full border-2 border-gold/40 bg-surface">
             {(figure.portrait_url ?? FIGURE_HEADERS[figure.slug]) ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
+              <Image
                 src={figure.portrait_url ?? FIGURE_HEADERS[figure.slug]}
                 alt={`Portrait of ${figure.name}`}
+                width={128}
+                height={128}
+                priority
                 className="size-full object-cover object-top"
               />
             ) : (

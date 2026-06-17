@@ -1,9 +1,14 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "How It Works | Legends Library",
+  title: "How It Works",
   description:
     "See how Legends Library builds historically accurate answers from primary sources.",
+  openGraph: {
+    title: 'How It Works — Legends Library',
+    url: '/how-it-works',
+  },
+  twitter: { title: 'How It Works — Legends Library' },
 };
 
 const steps = [
@@ -72,9 +77,44 @@ const stepIcons = [
   </svg>,
 ];
 
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Where do the answers come from?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Every answer is built from primary sources — letters, speeches, and writings — not trained guesses. We identify which primary sources are most relevant to your question, extract key passages, and synthesize the figure's documented views into a coherent perspective.",
+      },
+    },
+    {
+      "@type": "Question",
+      "name": "How do I know if an answer is speculation vs. documented fact?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Every response includes a confidence label (High, Medium, or Low) and a note on whether key claims come from direct evidence or reasoned inference. Claims are cross-referenced against the historical record, speculation is flagged, and sources are cited so you can check them yourself.",
+      },
+    },
+    {
+      "@type": "Question",
+      "name": "What kinds of questions work best?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "The best questions are ones that feel a little uncomfortable to ask out loud — questions where smart people disagree, where history is genuinely contested, or where the answer depends on whose values you hold. Questions about history, policy, philosophy, or human nature that a historical mind could speak to work especially well.",
+      },
+    },
+  ],
+};
+
 export default function HowItWorksPage() {
   return (
     <main>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
       {/* Hero */}
       <section
         className="relative flex min-h-[360px] items-start justify-center"

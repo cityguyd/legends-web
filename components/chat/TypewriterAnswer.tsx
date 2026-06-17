@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -60,10 +61,11 @@ export function TypewriterAnswer({
       <div className="flex items-center gap-3 border-b border-border pb-4">
         <div className="size-12 shrink-0 overflow-hidden rounded-full border-2 border-gold/40 bg-card">
           {portraitUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
+            <Image
               src={portraitUrl}
               alt={`Portrait of ${figureName}`}
+              width={48}
+              height={48}
               className="size-full object-cover object-top"
             />
           ) : (

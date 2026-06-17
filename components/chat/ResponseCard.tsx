@@ -4,8 +4,13 @@ import { useCallback } from "react";
 import { EvidenceRow, type EvidenceCitation } from "./EvidenceRow";
 import { withAttribution, type CopyTier } from "@/lib/chat/copyAttribution";
 import { confidenceLabel } from "./ConfidenceBadge";
+import { RefusalCard } from "./RefusalCard";
+import type { RefusalContext } from "@/lib/chat/chatReducer";
 
 export type { CopyTier };
+
+/** Default premium heading for a refusal when the caller supplies none. */
+const DEFAULT_REFUSAL_HEADING = "Outside the Record";
 
 /**
  * Message shape rendered by the card. Structurally compatible with the hook's
@@ -20,28 +25,50 @@ export interface ResponseCardMessage {
   sourceWarning?: string;
   tier3Warning?: string;
   tier3Sources?: string[];
+  refusalContext?: RefusalContext;
 }
 
 export function ResponseCard({
   message,
   tier = "free",
   onCopied,
+  refusalHeading = DEFAULT_REFUSAL_HEADING,
+  onAskAdjacent,
+  figureSlug,
+  question,
 }: {
   message: ResponseCardMessage;
   tier?: CopyTier;
   /** Called after the clipboard is written (for non-pro tiers). */
   onCopied?: () => void;
+  /** Premium refusal heading — "Outside the Record" / "Beyond My Time". */
+  refusalHeading?: string;
+  /** Fires when the user clicks "Ask this" on a refusal's adjacent question. */
+  onAskAdjacent?: (question: string) => void;
+  /** Figure slug + originating question, for the "source we missed" form. */
+  figureSlug?: string;
+  question?: string;
 }) {
+  const isRefused = message.confidence === "refused";
   const handleCopy = useCallback(
     (e: React.ClipboardEvent<HTMLElement>) => {
       if (tier === "pro") return;
       const selected = window.getSelection()?.toString() ?? "";
       if (!selected) return;
       e.preventDefault();
-      e.clipboardData.setData("text/plain", withAttribution(selected, tier));
+      const primary = message.citations?.[0];
+      e.clipboardData.setData(
+        "text/plain",
+        withAttribution(selected, tier, {
+          figureName: message.figureName,
+          citation: primary
+            ? { title: primary.title ?? primary.doc_title, year: primary.year }
+            : null,
+        })
+      );
       onCopied?.();
     },
-    [tier, onCopied]
+    [tier, onCopied, message.figureName, message.citations]
   );
 
   return (
@@ -63,7 +90,7 @@ export function ResponseCard({
       </header>
       <p className="mt-1 text-xs text-sub">
         AI reconstruction · Primary-source grounded
-        {message.confidence && confidenceLabel(message.confidence)
+        {!isRefused && message.confidence && confidenceLabel(message.confidence)
           ? ` · Confidence: ${confidenceLabel(message.confidence)}`
           : ""}
       </p>
@@ -104,10 +131,26 @@ export function ResponseCard({
           <span>{message.sourceWarning}</span>
         </div>
       )}
-      <p className="mt-2 whitespace-pre-wrap leading-relaxed text-ink">
-        {message.text}
-      </p>
-      <EvidenceRow confidence={message.confidence} citations={message.citations} />
+      {isRefused ? (
+        <RefusalCard
+          heading={refusalHeading}
+          body={message.text}
+          context={message.refusalContext}
+          onAskAdjacent={onAskAdjacent}
+          figureSlug={figureSlug}
+          question={question}
+        />
+      ) : (
+        <>
+          <p className="mt-2 whitespace-pre-wrap leading-relaxed text-ink">
+            {message.text}
+          </p>
+          <EvidenceRow
+            confidence={message.confidence}
+            citations={message.citations}
+          />
+        </>
+      )}
     </article>
   );
 }

@@ -29,11 +29,12 @@ import type {
   ChatStatus,
   Citation,
   ConfidenceTier,
+  RefusalContext,
   StreamAccumulator,
 } from "./chatReducer";
 
 // Re-export types the UI layer needs
-export type { ChatMessage, ChatStatus, Citation, ConfidenceTier };
+export type { ChatMessage, ChatStatus, Citation, ConfidenceTier, RefusalContext };
 
 // ── Public hook interface ────────────────────────────────────────────────────
 
@@ -190,6 +191,7 @@ export function useChatStream({
                 sourceWarning: acc.sourceWarning ?? undefined,
                 tier3Warning: acc.tier3Warning ?? undefined,
                 tier3Sources: acc.tier3Sources.length > 0 ? acc.tier3Sources : undefined,
+                refusalContext: acc.refusalContext ?? undefined,
               };
             }
             return updated;

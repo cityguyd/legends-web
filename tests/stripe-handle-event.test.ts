@@ -103,6 +103,69 @@ test("checkout.session.completed sets tier pro and records event", async () => {
   expect(db.inserts.stripe_events[0].stripe_event_id).toBe("evt_1");
 });
 
+test("checkout with metadata.tier=group provisions the buyer as group admin", async () => {
+  const db = mockServiceDb();
+  await handleStripeEvent(
+    evt("evt_g", "checkout.session.completed", {
+      id: "cs_g",
+      customer: "cus_g",
+      subscription: "sub_g",
+      client_reference_id: "user-admin",
+      metadata: { tier: "group", seat_count: "10" },
+    }),
+    db
+  );
+  expect(db.updates).toContainEqual({
+    table: "profiles",
+    id: "user-admin",
+    patch: {
+      tier: "group",
+      stripe_customer_id: "cus_g",
+      stripe_subscription_id: "sub_g",
+      group_id: "user-admin",
+      group_role: "admin",
+      seat_count: 10,
+    },
+  });
+});
+
+test("institution checkout without seat_count uses the plan default of 50", async () => {
+  const db = mockServiceDb();
+  await handleStripeEvent(
+    evt("evt_i", "checkout.session.completed", {
+      id: "cs_i",
+      customer: "cus_i",
+      subscription: "sub_i",
+      client_reference_id: "user-inst",
+      metadata: { tier: "institution" },
+    }),
+    db
+  );
+  const patch = db.updates[0].patch;
+  expect(patch.tier).toBe("institution");
+  expect(patch.seat_count).toBe(50);
+  expect(patch.group_role).toBe("admin");
+});
+
+test("unknown metadata.tier falls back to pro with no group fields", async () => {
+  const db = mockServiceDb();
+  await handleStripeEvent(
+    evt("evt_x", "checkout.session.completed", {
+      id: "cs_x",
+      customer: "cus_x",
+      subscription: "sub_x",
+      client_reference_id: "user-x",
+      metadata: { tier: "enterprise" },
+    }),
+    db
+  );
+  expect(db.updates[0].patch).toEqual({
+    tier: "pro",
+    stripe_customer_id: "cus_x",
+    stripe_subscription_id: "sub_x",
+  });
+});
+
 test("duplicate event id is a no-op", async () => {
   const db = mockServiceDb({ existingEventIds: ["evt_1"] });
   await handleStripeEvent(

@@ -16,6 +16,21 @@ export interface Citation {
   snippet: string;
 }
 
+/** A source the engine consulted but did not answer from, on a refusal. */
+export interface RefusalSource {
+  title: string;
+  url: string | null;
+  year: number | null;
+}
+
+/** Extra context streamed alongside a `refused` confidence tier (WS3). */
+export interface RefusalContext {
+  /** The distinct documents the engine looked at (even below threshold). */
+  sourcesChecked: RefusalSource[];
+  /** A related question the figure CAN answer — null if generation failed. */
+  adjacentQuestion: string | null;
+}
+
 export interface ChatMessage {
   role: "user" | "figure";
   /** Display name for the figure (undefined for user messages) */
@@ -30,6 +45,8 @@ export interface ChatMessage {
   /** Set when the engine fell back to Tier 3 LLM + sources it cited */
   tier3Warning?: string;
   tier3Sources?: string[];
+  /** Present on `refused` answers — drives the premium refusal card (WS3). */
+  refusalContext?: RefusalContext;
 }
 
 export type ChatStatus =
@@ -54,6 +71,7 @@ export interface StreamAccumulator {
   sourceWarning: string | null;
   tier3Warning: string | null;
   tier3Sources: string[];
+  refusalContext: RefusalContext | null;
   readyToReveal: boolean;
 }
 
@@ -66,6 +84,7 @@ export function makeChatState(): StreamAccumulator {
     sourceWarning: null,
     tier3Warning: null,
     tier3Sources: [],
+    refusalContext: null,
     readyToReveal: false,
   };
 }
@@ -127,6 +146,17 @@ export function applyEvent(
       };
     }
 
+    case "refusal_context": {
+      const adjacent = d["adjacent_question"];
+      return {
+        ...state,
+        refusalContext: {
+          sourcesChecked: parseRefusalSources(d["sources_checked"]),
+          adjacentQuestion: typeof adjacent === "string" ? adjacent : null,
+        },
+      };
+    }
+
     default:
       return state;
   }
@@ -170,6 +200,23 @@ function isConfidenceTier(value: unknown): value is ConfidenceTier {
     value === "inferred" ||
     value === "refused"
   );
+}
+
+function parseRefusalSources(raw: unknown): RefusalSource[] {
+  if (!Array.isArray(raw)) return [];
+  const result: RefusalSource[] = [];
+  for (const item of raw) {
+    if (typeof item !== "object" || item === null) continue;
+    const obj = item as Record<string, unknown>;
+    const title = typeof obj["title"] === "string" ? obj["title"] : null;
+    if (!title) continue;
+    result.push({
+      title,
+      url: typeof obj["url"] === "string" ? obj["url"] : null,
+      year: typeof obj["year"] === "number" ? obj["year"] : null,
+    });
+  }
+  return result;
 }
 
 function parseCitationsPayload(raw: unknown): Citation[] {

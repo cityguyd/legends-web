@@ -17,6 +17,7 @@ import {
   type ConversationSummary,
   type SaveConversationInput,
   type SaveConversationResult,
+  type SharedConversationData,
 } from "@/lib/conversations/shared";
 
 // ── Helpers (module-private; not exported — "use server" files may only
@@ -81,6 +82,7 @@ function parseSummaryRow(row: unknown): ConversationSummary | null {
         : null,
     figureSlug: typeof figure?.slug === "string" ? figure.slug : null,
     figureName: typeof figure?.name === "string" ? figure.name : null,
+    isShared: r.is_shared === true,
   };
 }
 
@@ -188,7 +190,7 @@ export async function listConversations(
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("conversations")
-    .select("id, title, created_at, figures(slug, name)")
+    .select("id, title, created_at, is_shared, figures(slug, name)")
     .order("created_at", { ascending: false })
     .limit(limit);
   if (error) return [];
@@ -219,6 +221,94 @@ export async function deleteConversation(id: string): Promise<void> {
 }
 
 /**
+ * Fetch a single conversation (with messages) for PDF export.
+ * Returns unauthenticated / not-found / error / ok.
+ */
+export async function getConversationForExport(id: string): Promise<
+  | { kind: "unauthenticated" }
+  | { kind: "not-found" }
+  | { kind: "error" }
+  | {
+      kind: "ok";
+      data: {
+        title: string;
+        figureName: string | null;
+        createdAt: string | null;
+        messages: {
+          role: string;
+          text: string;
+          citations: unknown;
+          confidence: string | null;
+        }[];
+      };
+    }
+> {
+  if (typeof id !== "string" || id.trim().length === 0) {
+    return { kind: "not-found" };
+  }
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { kind: "unauthenticated" };
+
+  const { data, error } = await supabase
+    .from("conversations")
+    .select(
+      "id, title, created_at, figures(name), messages(role, text, citations, confidence, created_at)"
+    )
+    .eq("id", id)
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (error) return { kind: "error" };
+  if (!data) return { kind: "not-found" };
+
+  const figure = (data.figures as unknown as Record<string, unknown> | null) ?? null;
+  const figureName = typeof figure?.name === "string" ? figure.name : null;
+
+  // Sort messages by created_at ascending in JS (embed ordering is not guaranteed).
+  type MsgRow = {
+    role: string;
+    text: string;
+    citations: unknown;
+    confidence: string | null;
+    created_at: string | null;
+  };
+  const rawMessages: MsgRow[] = Array.isArray(data.messages)
+    ? (data.messages as MsgRow[])
+    : [];
+  const sorted = [...rawMessages].sort((a, b) => {
+    const ta = a.created_at ?? "";
+    const tb = b.created_at ?? "";
+    return ta < tb ? -1 : ta > tb ? 1 : 0;
+  });
+
+  const messages = sorted.map((m) => ({
+    role: m.role,
+    text: m.text,
+    citations: m.citations ?? null,
+    confidence: typeof m.confidence === "string" ? m.confidence : null,
+  }));
+
+  const rawDate =
+    typeof data.created_at === "string" ? data.created_at : null;
+
+  return {
+    kind: "ok",
+    data: {
+      title:
+        typeof data.title === "string" && data.title.length > 0
+          ? data.title
+          : "Untitled conversation",
+      figureName,
+      createdAt: rawDate,
+      messages,
+    },
+  };
+}
+
+/**
  * Full export of the user's saved conversations (all tiers).
  * Returns { kind: "unauthenticated" } when not signed in (→ 401),
  * { kind: "error" } on a query failure (→ 500),
@@ -242,4 +332,110 @@ export async function exportConversations(): Promise<
     .order("created_at", { ascending: false });
   if (error) return { kind: "error" };
   return { kind: "ok", data: data ?? [] };
+}
+
+/**
+ * Toggle the is_shared flag on a conversation owned by the current user.
+ */
+export async function toggleShareConversation(
+  id: string
+): Promise<{ ok: boolean; isShared?: boolean; error?: string }> {
+  if (typeof id !== "string" || id.trim().length === 0) {
+    return { ok: false, error: "invalid-id" };
+  }
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: "unauthenticated" };
+
+  // Fetch the current value.
+  const { data: current, error: fetchError } = await supabase
+    .from("conversations")
+    .select("is_shared")
+    .eq("id", id)
+    .eq("user_id", user.id)
+    .maybeSingle();
+  if (fetchError || !current) return { ok: false, error: "not-found" };
+
+  const newValue = !current.is_shared;
+
+  const { data: updated, error: updateError } = await supabase
+    .from("conversations")
+    .update({ is_shared: newValue })
+    .eq("id", id)
+    .eq("user_id", user.id)
+    .select("is_shared")
+    .single();
+  if (updateError || !updated) return { ok: false, error: "update-failed" };
+
+  safeRevalidate("/conversations");
+  return { ok: true, isShared: updated.is_shared };
+}
+
+/**
+ * Fetch a publicly shared conversation (no auth required — RLS allows public
+ * SELECT on conversations/messages where is_shared = true).
+ */
+export async function getSharedConversation(id: string): Promise<
+  | { kind: "not-found" }
+  | { kind: "error" }
+  | { kind: "ok"; data: SharedConversationData }
+> {
+  if (typeof id !== "string" || id.trim().length === 0) {
+    return { kind: "not-found" };
+  }
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("conversations")
+    .select(
+      "id, title, created_at, is_shared, figures(name, slug, tagline), messages(role, text, citations, confidence, created_at)"
+    )
+    .eq("id", id)
+    .eq("is_shared", true)
+    .maybeSingle();
+
+  if (error) return { kind: "error" };
+  if (!data || !data.is_shared) return { kind: "not-found" };
+
+  const figure = (data.figures ?? null) as unknown as Record<string, unknown> | null;
+
+  type MsgRow = {
+    role: string;
+    text: string;
+    citations: unknown;
+    confidence: string | null;
+    created_at: string | null;
+  };
+  const rawMessages: MsgRow[] = Array.isArray(data.messages)
+    ? (data.messages as MsgRow[])
+    : [];
+  const sorted = [...rawMessages].sort((a, b) => {
+    const ta = a.created_at ?? "";
+    const tb = b.created_at ?? "";
+    return ta < tb ? -1 : ta > tb ? 1 : 0;
+  });
+
+  return {
+    kind: "ok",
+    data: {
+      title:
+        typeof data.title === "string" && data.title.length > 0
+          ? data.title
+          : "Untitled conversation",
+      figureName: typeof figure?.name === "string" ? figure.name : null,
+      figureSlug: typeof figure?.slug === "string" ? figure.slug : null,
+      figureTagline:
+        typeof figure?.tagline === "string" ? figure.tagline : null,
+      createdAt:
+        typeof data.created_at === "string" ? data.created_at : null,
+      messages: sorted.map((m) => ({
+        role: m.role,
+        text: m.text,
+        confidence:
+          typeof m.confidence === "string" ? m.confidence : null,
+      })),
+    },
+  };
 }

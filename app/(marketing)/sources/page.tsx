@@ -4,9 +4,14 @@ import { getFigures, isLive } from "@/lib/marketing/data";
 export const revalidate = 3600;
 
 export const metadata = {
-  title: "Sources — Legends Library",
+  title: "Sources",
   description:
     "Every figure is built from a source library: speeches, letters, books, interviews, and verified writings.",
+  openGraph: {
+    title: 'Sources — Legends Library',
+    url: '/sources',
+  },
+  twitter: { title: 'Sources — Legends Library' },
 };
 
 export default async function SourcesIndexPage() {

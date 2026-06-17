@@ -324,6 +324,49 @@ describe("useChatStream", () => {
     expect(result.current.limit).toBeNull();
   });
 
+  test("(i) refusal stream → refusalContext committed on figure message", async () => {
+    const refusalSSE =
+      `data: {"type":"refusal_context","sources_checked":[{"title":"Gospel of Matthew","url":"https://m","year":30}],"adjacent_question":"What did Jesus say about forgiveness?"}\n\n` +
+      `data: {"type":"chunk","text":"I won't speculate beyond the record."}\n\n` +
+      `data: {"type":"citations","data":[]}\n\n` +
+      `data: {"type":"confidence","tier":"refused"}\n\n` +
+      `data: {"type":"done"}\n\n`;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn()
+        .mockResolvedValueOnce(sseResponse(refusalSSE))
+        .mockResolvedValueOnce(
+          new Response(
+            JSON.stringify({ questions_used: 1, questions_limit: 10 }),
+            { status: 200 }
+          )
+        )
+    );
+
+    const { result } = renderHook(() => useChatStream(DEFAULT_OPTS));
+
+    await act(async () => {
+      result.current.send("What did Jesus say about quantum physics?");
+    });
+
+    await vi.waitFor(
+      () => {
+        expect(result.current.status).toBe("complete");
+      },
+      { timeout: 3000 }
+    );
+
+    const fig = result.current.messages[1];
+    expect(fig.confidence).toBe("refused");
+    expect(fig.refusalContext?.adjacentQuestion).toBe(
+      "What did Jesus say about forgiveness?"
+    );
+    expect(fig.refusalContext?.sourcesChecked).toHaveLength(1);
+    expect(fig.refusalContext?.sourcesChecked[0].title).toBe(
+      "Gospel of Matthew"
+    );
+  });
+
   test("(f) retry() after success is a no-op (fetch not called again)", async () => {
     const fetchSpy = vi
       .fn()

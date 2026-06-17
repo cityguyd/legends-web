@@ -37,7 +37,7 @@ and set the same keys in the Vercel project (see below).
 | `SUPABASE_SERVICE_ROLE_KEY` | Service role key — server only, used by the Stripe webhook to write `profiles.tier`. |
 | `STRIPE_SECRET_KEY` | Stripe secret key (server only). |
 | `STRIPE_WEBHOOK_SECRET` | Signing secret for the `/api/stripe/webhook` endpoint. |
-| `STRIPE_PRICE_ID` | Price ID for the $7/mo Premium plan. |
+| `STRIPE_PRICE_ID` | Price ID for the $5/mo Premium plan. |
 | `NEXT_PUBLIC_SITE_URL` | Canonical site URL (used for Stripe redirect URLs). |
 
 ## Deploy — Vercel (web app)
@@ -71,7 +71,7 @@ Railway environment variables — the engine's existing vars (see
 ## Stripe dashboard setup
 
 1. **Product / price** — create a recurring product "Legends Library Premium"
-   with a **$7/month** price. Copy its price ID into `STRIPE_PRICE_ID`.
+   with a **$5/month** price. Copy its price ID into `STRIPE_PRICE_ID`.
 2. **Webhook endpoint** — add an endpoint pointing at
    `https://<your-vercel-domain>/api/stripe/webhook` subscribed to:
    - `checkout.session.completed`

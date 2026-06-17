@@ -1,5 +1,9 @@
 import Link from "next/link";
-import { FigureCard } from "@/components/marketing/FigureCard";
+import {
+  FAITH_CATEGORY,
+  FAITH_LANDING_HREF,
+  FigureCard,
+} from "@/components/marketing/FigureCard";
 import { getFigures } from "@/lib/marketing/data";
 import { FIGURE_HEADERS } from "@/lib/marketing/assets";
 
@@ -66,6 +70,11 @@ export default async function FiguresPage() {
                     portraitUrl: figure.portrait_url ?? FIGURE_HEADERS[figure.slug] ?? null,
                     shortName: (figure as unknown as Record<string, unknown>).short_name as string | undefined,
                   }}
+                  moreInfoHref={
+                    figure.category.includes(FAITH_CATEGORY)
+                      ? FAITH_LANDING_HREF
+                      : undefined
+                  }
                 />
               </li>
             ))}

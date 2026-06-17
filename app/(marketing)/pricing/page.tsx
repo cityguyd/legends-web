@@ -3,9 +3,14 @@ import Link from "next/link";
 export const revalidate = 3600;
 
 export const metadata = {
-  title: "Pricing — Legends Library",
+  title: "Pricing",
   description:
     "Start free. Unlock the full debate when you're ready. Ask bold questions, get cited answers, and explore how history's biggest minds might argue about today's biggest issues.",
+  openGraph: {
+    title: 'Pricing — Legends Library',
+    url: '/pricing',
+  },
+  twitter: { title: 'Pricing — Legends Library' },
 };
 
 const freeFeatures = [
@@ -56,8 +61,31 @@ const premiumHighlights = [
 ];
 
 export default function PricingPage() {
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": "Legends Library Premium",
+    "description": "Unlimited questions, saved conversations, and full access to the growing library of historical figures.",
+    "offers": {
+      "@type": "Offer",
+      "price": "5.00",
+      "priceCurrency": "USD",
+      "priceSpecification": {
+        "@type": "UnitPriceSpecification",
+        "price": "5.00",
+        "priceCurrency": "USD",
+        "billingDuration": "P1M",
+      },
+      "availability": "https://schema.org/InStock",
+    },
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      />
       {/* Plans */}
       <section className="mx-auto max-w-4xl px-6 py-16">
         <div className="mt-0 grid gap-6 md:grid-cols-2">
@@ -166,6 +194,98 @@ export default function PricingPage() {
                 <p className="mt-2 text-sm text-sub">{item.body}</p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Teams & Organizations */}
+      <section className="border-t border-border bg-bg">
+        <div className="mx-auto max-w-4xl px-6 py-16">
+          <div className="text-center">
+            <h2 className="font-display text-3xl font-bold text-ink">
+              For Teams &amp; Organizations
+            </h2>
+            <p className="mx-auto mt-2 max-w-2xl text-sub">
+              One plan for your whole church, small group, classroom, or
+              homeschool co-op. Every seat gets unlimited access; an admin
+              manages the roster.
+            </p>
+          </div>
+
+          <div className="mt-10 grid gap-6 md:grid-cols-2">
+            {/* Group */}
+            <div className="flex flex-col rounded-2xl border border-border bg-surface p-8">
+              <h3 className="font-display text-2xl font-bold text-ink">Group</h3>
+              <p className="mt-1 text-sm text-sub">
+                For small groups, classrooms, and ministries.
+              </p>
+              <p className="mt-5">
+                <span className="font-display text-5xl font-bold text-ink">
+                  $39
+                </span>
+                <span className="text-sub">/month</span>
+                <span className="ml-2 text-sm text-sub">· up to 10 seats</span>
+              </p>
+              <ul className="mt-6 space-y-3 text-sm text-sub">
+                {[
+                  "Everything in Premium, per seat",
+                  "10 seats with admin roster management",
+                  "Invite & remove members by email",
+                  "Annual billing available ($320/yr)",
+                ].map((f) => (
+                  <li key={f} className="flex gap-2">
+                    <span aria-hidden="true" className="text-gold">
+                      ✓
+                    </span>
+                    {f}
+                  </li>
+                ))}
+              </ul>
+              <a
+                href="mailto:support@legendslibrary.ai?subject=Group%20plan%20(10%20seats)"
+                className="mt-8 block rounded-lg border border-gold px-6 py-3 text-center font-semibold text-gold-dark transition-colors hover:bg-card"
+              >
+                Contact us to set up
+              </a>
+            </div>
+
+            {/* Institution */}
+            <div className="flex flex-col rounded-2xl border border-border bg-surface p-8">
+              <h3 className="font-display text-2xl font-bold text-ink">
+                Institution
+              </h3>
+              <p className="mt-1 text-sm text-sub">
+                For schools, seminaries, and larger organizations.
+              </p>
+              <p className="mt-5">
+                <span className="font-display text-5xl font-bold text-ink">
+                  $149
+                </span>
+                <span className="text-sub">/month</span>
+                <span className="ml-2 text-sm text-sub">· up to 50 seats</span>
+              </p>
+              <ul className="mt-6 space-y-3 text-sm text-sub">
+                {[
+                  "Everything in Group, for up to 50 seats",
+                  "Roster management & usage reports",
+                  "Annual billing available ($1,200/yr)",
+                  "Onboarding support",
+                ].map((f) => (
+                  <li key={f} className="flex gap-2">
+                    <span aria-hidden="true" className="text-gold">
+                      ✓
+                    </span>
+                    {f}
+                  </li>
+                ))}
+              </ul>
+              <a
+                href="mailto:support@legendslibrary.ai?subject=Institution%20plan%20(50%20seats)"
+                className="mt-8 block rounded-lg border border-gold px-6 py-3 text-center font-semibold text-gold-dark transition-colors hover:bg-card"
+              >
+                Contact us to set up
+              </a>
+            </div>
           </div>
         </div>
       </section>

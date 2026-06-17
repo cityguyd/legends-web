@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AskBar } from "@/components/dashboard/AskBar";
@@ -35,10 +36,11 @@ function QuickPickCard({ figure }: { figure: Figure }) {
     >
       <span className="size-12 shrink-0 overflow-hidden rounded-full border-2 border-gold/40 bg-card">
         {figure.portrait_url ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Image
             src={figure.portrait_url}
             alt=""
+            width={48}
+            height={48}
             className={`size-full object-cover ${live ? "" : "opacity-60 grayscale"}`}
           />
         ) : (

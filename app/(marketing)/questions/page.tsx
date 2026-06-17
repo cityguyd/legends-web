@@ -5,9 +5,14 @@ import { getFeaturedQuestions } from "@/lib/marketing/data";
 export const revalidate = 3600;
 
 export const metadata = {
-  title: "Hot Questions — Legends Library",
+  title: "Hot Questions",
   description:
     "Browse source-grounded answers to history's hottest questions — citations and confidence labels included.",
+  openGraph: {
+    title: 'Hot Questions — Legends Library',
+    url: '/questions',
+  },
+  twitter: { title: 'Hot Questions — Legends Library' },
 };
 
 const TOPIC_ICONS: Record<string, React.ReactElement> = {

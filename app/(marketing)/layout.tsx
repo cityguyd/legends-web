@@ -94,6 +94,7 @@ export default function MarketingLayout({
               <p className="text-sm font-semibold text-ink">Product</p>
               <ul className="mt-3 space-y-2 text-sm text-sub">
                 <li><Link href="/figures" className="hover:text-gold-dark">Figures</Link></li>
+                <li><Link href="/faith" className="hover:text-gold-dark">Christian Faith</Link></li>
                 <li><Link href="/how-it-works" className="hover:text-gold-dark">How it Works</Link></li>
                 <li><Link href="/debates" className="hover:text-gold-dark">Debates</Link></li>
                 <li><Link href="/council" className="hover:text-gold-dark">Council</Link></li>

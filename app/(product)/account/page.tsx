@@ -1,10 +1,19 @@
+import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { DeleteAccountButton } from "@/components/account/DeleteAccountButton";
 import { ProductHeader } from "@/components/product/ProductHeader";
 import { refreshSubscriptionStatus } from "@/lib/actions/account";
+import { claimGroupInvites } from "@/lib/actions/group";
 import { FREE_SAVE_CAP } from "@/lib/conversations/shared";
 import { createClient } from "@/lib/supabase/server";
+
+const TIER_LABEL: Record<string, string> = {
+  free: "Free",
+  pro: "Premium",
+  group: "Group",
+  institution: "Institution",
+};
 
 export const metadata = {
   title: "Account — Legends Library",
@@ -33,10 +42,13 @@ export default async function AccountPage() {
   // Proxy already guards /account — this is defense in depth.
   if (!user) redirect("/login?next=/account");
 
+  // If this user was invited to a group, attach their seat on first visit.
+  await claimGroupInvites();
+
   const [{ data: profile }, { count: savedCount }] = await Promise.all([
     supabase
       .from("profiles")
-      .select("display_name, avatar_url, tier, created_at")
+      .select("display_name, avatar_url, tier, created_at, group_role")
       .eq("id", user.id)
       .maybeSingle(),
     supabase
@@ -45,7 +57,11 @@ export default async function AccountPage() {
       .eq("user_id", user.id),
   ]);
 
-  const isPro = profile?.tier === "pro";
+  const tier = typeof profile?.tier === "string" ? profile.tier : "free";
+  const isOrg = tier === "group" || tier === "institution";
+  const isGroupAdmin = isOrg && profile?.group_role === "admin";
+  // "Premium-equivalent" access: unlimited usage + premium perks.
+  const isPro = tier === "pro" || isOrg;
   const email = user.email ?? "";
   const displayName =
     (typeof profile?.display_name === "string" &&
@@ -75,10 +91,11 @@ export default async function AccountPage() {
             <div className="flex items-center gap-4">
               <span className="flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-gold/40 bg-card">
                 {avatarUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
+                  <Image
                     src={avatarUrl}
                     alt=""
+                    width={56}
+                    height={56}
                     className="size-full object-cover"
                   />
                 ) : (
@@ -115,15 +132,26 @@ export default async function AccountPage() {
                       : "border border-border bg-card text-sub"
                   }`}
                 >
-                  {isPro ? "Premium" : "Free"}
+                  {TIER_LABEL[tier] ?? "Free"}
                 </span>
                 <p className="mt-2 text-sm text-sub">
-                  {isPro
-                    ? "Unlimited questions (fair use), unlimited saves, clean copy, and PDF export."
-                    : "6 questions a day and up to 5 saved conversations."}
+                  {isOrg
+                    ? isGroupAdmin
+                      ? "You manage this organization plan — every seat gets unlimited access."
+                      : "Your seat is on an organization plan — unlimited questions (fair use)."
+                    : isPro
+                      ? "Unlimited questions (fair use), unlimited saves, clean copy, and PDF export."
+                      : "6 questions a day and up to 5 saved conversations."}
                 </p>
               </div>
-              {isPro ? (
+              {isGroupAdmin ? (
+                <Link
+                  href="/group"
+                  className="rounded-lg bg-gold px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-gold-dark"
+                >
+                  Manage group →
+                </Link>
+              ) : isOrg ? null : isPro ? (
                 <a
                   href="/api/stripe/portal"
                   className="rounded-lg border border-gold px-4 py-2 text-sm font-semibold text-gold-dark transition-colors hover:bg-card"

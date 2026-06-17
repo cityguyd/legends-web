@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
-const PROTECTED_PREFIXES = ["/dashboard", "/conversations", "/account"];
+const PROTECTED_PREFIXES = ["/dashboard", "/conversations", "/account", "/admin", "/group"];
 
 export async function proxy(request: NextRequest) {
   // Start with a mutable response reference so setAll can reassign it.

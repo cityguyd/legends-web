@@ -8,6 +8,15 @@ import { QUESTION_BACKGROUNDS } from "@/lib/marketing/assets";
 
 export const revalidate = 3600;
 
+export const metadata = {
+  openGraph: {
+    title: 'Legends Library',
+    description: "Ask history's greatest minds anything.",
+    url: '/',
+  },
+  twitter: { title: 'Legends Library' },
+};
+
 export default function HomePage() {
   return (
     <>

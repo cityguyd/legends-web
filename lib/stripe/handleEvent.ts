@@ -73,6 +73,28 @@ function asString(value: unknown): string | null {
   return typeof value === "string" && value.length > 0 ? value : null;
 }
 
+const PAID_TIERS = ["pro", "group", "institution"] as const;
+const DEFAULT_SEATS: Record<string, number> = { group: 10, institution: 50 };
+
+/**
+ * The tier to grant from a checkout session. Self-serve Premium checkouts carry
+ * no tier metadata → "pro". Organization checkouts/invoices set
+ * `metadata.tier` to "group" / "institution". Unknown values fall back to "pro".
+ */
+function resolveTier(object: Record<string, unknown>): string {
+  const requested = asString(asRecord(object.metadata).tier);
+  return requested && (PAID_TIERS as readonly string[]).includes(requested)
+    ? requested
+    : "pro";
+}
+
+/** Seat allowance from `metadata.seat_count`, else the plan default. */
+function resolveSeatCount(object: Record<string, unknown>, tier: string): number {
+  const raw = Number(asRecord(object.metadata).seat_count);
+  if (Number.isFinite(raw) && raw > 0) return Math.floor(raw);
+  return DEFAULT_SEATS[tier] ?? 1;
+}
+
 export async function handleStripeEvent(
   event: StripeEventLike,
   db: ServiceDb
@@ -100,11 +122,20 @@ export async function handleStripeEvent(
         );
         break;
       }
-      await db.updateProfile(userId, {
-        tier: "pro",
+      const patch: Record<string, unknown> = {
+        tier: resolveTier(object),
         stripe_customer_id: asString(object.customer),
         stripe_subscription_id: asString(object.subscription),
-      });
+      };
+      // Organization tiers: the buyer becomes the group admin and the group is
+      // keyed by their own user id. Seats come from metadata, else the plan
+      // default (group 10 / institution 50).
+      if (patch.tier === "group" || patch.tier === "institution") {
+        patch.group_id = userId;
+        patch.group_role = "admin";
+        patch.seat_count = resolveSeatCount(object, patch.tier);
+      }
+      await db.updateProfile(userId, patch);
       break;
     }
 

@@ -52,6 +52,7 @@ export interface ConversationSummary {
   createdAt: string | null;
   figureSlug: string | null;
   figureName: string | null;
+  isShared: boolean;
 }
 
 /** What the chat Sidebar needs — a structural subset of ConversationSummary. */
@@ -59,3 +60,17 @@ export type SidebarConversation = Pick<
   ConversationSummary,
   "id" | "title" | "createdAt"
 >;
+
+/** Data shape returned by getSharedConversation for the public share page. */
+export interface SharedConversationData {
+  title: string;
+  figureName: string | null;
+  figureSlug: string | null;
+  figureTagline: string | null;
+  createdAt: string | null;
+  messages: {
+    role: string;
+    text: string;
+    confidence: string | null;
+  }[];
+}

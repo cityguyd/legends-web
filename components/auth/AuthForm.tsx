@@ -150,9 +150,8 @@ export function AuthForm({ mode }: AuthFormProps) {
               Password
             </label>
             {!isSignup && (
-              /* TODO: wire real password reset flow */
               <Link
-                href="/login"
+                href="/forgot-password"
                 className="text-xs font-body text-gold hover:underline"
               >
                 Forgot password?

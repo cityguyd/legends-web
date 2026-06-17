@@ -3,6 +3,10 @@ import Link from "next/link";
 import { isLive } from "@/lib/marketing/data";
 import { NotifyButton } from "./NotifyButton";
 
+/** Category whose figures route their "More Info" to the faith landing page. */
+export const FAITH_CATEGORY = "Christian Faith";
+export const FAITH_LANDING_HREF = "/faith";
+
 export interface FigureCardFigure {
   slug: string;
   name: string;
@@ -30,7 +34,15 @@ export function shortName(figure: Pick<FigureCardFigure, "name" | "shortName">):
   return cleaned.split(/\s+/)[0];
 }
 
-export function FigureCard({ figure }: { figure: FigureCardFigure }) {
+export function FigureCard({
+  figure,
+  moreInfoHref,
+}: {
+  figure: FigureCardFigure;
+  /** Overrides the "More Info" target. Defaults to the figure profile page.
+   * Faith-category figures point at the /faith landing page instead. */
+  moreInfoHref?: string;
+}) {
   const live = isLive(figure);
   const isHeaderImage = figure.portraitUrl?.startsWith("/images/figures/") ?? false;
 
@@ -94,7 +106,7 @@ export function FigureCard({ figure }: { figure: FigureCardFigure }) {
           <NotifyButton figureSlug={figure.slug} />
         )}
         <Link
-          href={`/figures/${figure.slug}`}
+          href={moreInfoHref ?? `/figures/${figure.slug}`}
           className="inline-block w-full rounded-lg border border-border bg-surface px-4 py-1.5 text-xs font-medium text-sub transition-colors hover:border-gold hover:text-ink text-center"
         >
           More Info

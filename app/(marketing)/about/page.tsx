@@ -3,9 +3,14 @@
 export const revalidate = 3600;
 
 export const metadata = {
-  title: "About — Legends Library",
+  title: "About",
   description:
     "History never stopped talking. We just forgot how to listen.",
+  openGraph: {
+    title: 'About — Legends Library',
+    url: '/about',
+  },
+  twitter: { title: 'About — Legends Library' },
 };
 
 const timelessQuestions = [
