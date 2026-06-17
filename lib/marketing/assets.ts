@@ -23,4 +23,6 @@ export const FIGURE_HEADERS: Record<string, string> = {
 export const QUESTION_BACKGROUNDS: Record<string, string> = {
   "martin-luther-king": "/images/questions/mlk-black-america.png?v=2",
   "marcus-aurelius": "/images/questions/marcus-anxiety.png?v=2",
+  "abraham-lincoln": "/images/questions/lincoln-divided-america.png",
+  "frederick-douglass": "/images/questions/douglass-founding-promise.png",
 };
