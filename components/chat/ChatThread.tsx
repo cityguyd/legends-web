@@ -30,6 +30,7 @@ export function ChatThread({
   showVoiceToggle,
   initialQuestion,
   initialMessages,
+  conversationId,
 }: {
   figure: FigureHeaderFigure;
   isSignedIn: boolean;
@@ -40,6 +41,7 @@ export function ChatThread({
   initialQuestion?: string;
   /** Seed exchange (e.g. original Hot Question + cached answer) for follow-ups. */
   initialMessages?: ChatMessage[];
+  conversationId?: string;
 }) {
   const [voiceMode, setVoiceMode] = useState<VoiceMode>("modern");
   const { messages, status, remaining, limit, send, retry } = useChatStream({
@@ -47,6 +49,7 @@ export function ChatThread({
     figureName: figure.name,
     voiceMode,
     initialMessages,
+    conversationId,
   });
 
   // "Ask this" on a refusal card prefills (never auto-sends) the composer.

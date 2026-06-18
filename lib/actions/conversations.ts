@@ -373,6 +373,72 @@ export async function toggleShareConversation(
   return { ok: true, isShared: updated.is_shared };
 }
 
+// ── Resume ───────────────────────────────────────────────────────────────────
+
+export interface ResumeData {
+  figureSlug: string;
+  figureName: string | null;
+  conversationId: string;
+  messages: {
+    role: "user" | "figure";
+    figureName?: string;
+    text: string;
+    citations?: { title: string; url: string | null; year: number | null; snippet: string }[];
+    confidence?: "strong" | "inferred" | "refused";
+  }[];
+}
+
+/**
+ * Load a saved conversation (figure slug + mapped messages) for the owner,
+ * returning it in the shape ChatThread / useChatStream consume.
+ */
+export async function getConversationForResume(
+  id: string
+): Promise<{ kind: "ok"; data: ResumeData } | { kind: "not_found" } | { kind: "unauthorized" }> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { kind: "unauthorized" };
+
+  const { data: conv } = await supabase
+    .from("conversations")
+    .select("id, figure_id, user_id")
+    .eq("id", id)
+    .maybeSingle();
+  if (!conv || conv.user_id !== user.id) return { kind: "not_found" };
+
+  const [{ data: figure }, { data: rows }] = await Promise.all([
+    supabase.from("figures").select("slug, name").eq("id", conv.figure_id).maybeSingle(),
+    supabase
+      .from("messages")
+      .select("role, text, citations, confidence")
+      .eq("conversation_id", id)
+      .order("created_at", { ascending: true }),
+  ]);
+
+  const messages = (rows ?? []).map((m) => ({
+    role: m.role === "figure" ? ("figure" as const) : ("user" as const),
+    figureName: m.role === "figure" ? (figure?.name ?? undefined) : undefined,
+    text: m.text as string,
+    citations: Array.isArray(m.citations)
+      ? (m.citations as ResumeData["messages"][number]["citations"])
+      : undefined,
+    confidence:
+      (m.confidence as ResumeData["messages"][number]["confidence"]) ?? undefined,
+  }));
+
+  return {
+    kind: "ok",
+    data: {
+      figureSlug: (figure?.slug as string) ?? "",
+      figureName: (figure?.name as string) ?? null,
+      conversationId: id,
+      messages,
+    },
+  };
+}
+
 /**
  * Fetch a publicly shared conversation (no auth required — RLS allows public
  * SELECT on conversations/messages where is_shared = true).

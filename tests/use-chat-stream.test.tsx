@@ -367,6 +367,31 @@ describe("useChatStream", () => {
     );
   });
 
+  test("(j) sends prior turns as history in the request body", async () => {
+  const fetchSpy = vi.fn()
+    .mockResolvedValueOnce(sseResponse(successSSE("First.")))
+    .mockResolvedValueOnce(new Response(JSON.stringify(
+      { questions_used: 1, questions_limit: 10 }), { status: 200 }))
+    .mockResolvedValueOnce(sseResponse(successSSE("Second.")))
+    .mockResolvedValueOnce(new Response(JSON.stringify(
+      { questions_used: 2, questions_limit: 10 }), { status: 200 }));
+  vi.stubGlobal("fetch", fetchSpy);
+
+  const { result } = renderHook(() => useChatStream(DEFAULT_OPTS));
+  await act(async () => { result.current.send("First question?"); });
+  await vi.waitFor(() => expect(result.current.status).toBe("complete"), { timeout: 3000 });
+  await act(async () => { result.current.send("Second question?"); });
+  await vi.waitFor(() => expect(result.current.status).toBe("complete"), { timeout: 3000 });
+
+  // 3rd fetch call (index 2) is the 2nd /api/chat — body should carry history
+  const body = JSON.parse(fetchSpy.mock.calls[2][1].body as string);
+  expect(body.history).toEqual([
+    { role: "user", content: "First question?" },
+    { role: "assistant", content: "First." },
+  ]);
+  expect(body.question).toBe("Second question?");
+});
+
   test("(f) retry() after success is a no-op (fetch not called again)", async () => {
     const fetchSpy = vi
       .fn()
