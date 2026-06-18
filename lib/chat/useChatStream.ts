@@ -51,6 +51,8 @@ export interface UseChatStreamOptions {
    * opening a blank chat. Shown read-only above the live turns.
    */
   initialMessages?: ChatMessage[];
+  /** When set, completed turns are persisted server-side under this id. */
+  conversationId?: string;
 }
 
 export interface UseChatStreamResult {
@@ -75,6 +77,7 @@ export interface UseChatStreamResult {
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 const CHARS_PER_FRAME = 40;
+const MAX_HISTORY_TURNS = 8; // last N committed messages sent as context
 const ENGINE_URL = process.env.NEXT_PUBLIC_ENGINE_URL ?? "";
 
 /** Returns a stable browser-tab session id, or a short random token on SSR. */
@@ -98,8 +101,14 @@ export function useChatStream({
   figureName,
   voiceMode = "modern",
   initialMessages,
+  conversationId,
 }: UseChatStreamOptions): UseChatStreamResult {
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages ?? []);
+  // Mirror of `messages` for synchronous reads inside send() (state is async).
+  const messagesRef = useRef<ChatMessage[]>(initialMessages ?? []);
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
   const [status, setStatus] = useState<ChatStatus>("idle");
   const [remaining, setRemaining] = useState<number | null>(null);
   const [limit, setLimit] = useState<number | null>(null);
@@ -228,6 +237,15 @@ export function useChatStream({
       streaming.current = true;
       pendingQuestion.current = question;
 
+      // Snapshot the prior, fully-revealed turns BEFORE appending this question.
+      const history = messagesRef.current
+        .filter((m) => m.text.trim().length > 0)
+        .slice(-MAX_HISTORY_TURNS)
+        .map((m) => ({
+          role: m.role === "figure" ? ("assistant" as const) : ("user" as const),
+          content: m.text,
+        }));
+
       // Append the user message
       setMessages((prev) => [...prev, { role: "user", text: question }]);
       setStatus("consulting");
@@ -272,6 +290,8 @@ export function useChatStream({
             question,
             session_id: sessionId,
             voice_mode: voiceMode,
+            history,
+            ...(conversationId ? { conversation_id: conversationId } : {}),
           }),
         });
       } catch (err) {
@@ -380,7 +400,7 @@ export function useChatStream({
       // Hand off to the typing reveal animation
       startReveal(acc, figureName);
     },
-    [figureSlug, figureName, voiceMode, startReveal]
+    [figureSlug, figureName, voiceMode, conversationId, startReveal]
   );
 
   // ── Retry ─────────────────────────────────────────────────────────────────
