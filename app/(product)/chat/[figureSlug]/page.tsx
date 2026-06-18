@@ -3,8 +3,9 @@ import Link from "next/link";
 import { ChatThread } from "@/components/chat/ChatThread";
 import { Sidebar } from "@/components/chat/Sidebar";
 import { listConversations } from "@/lib/actions/conversations";
-import { getFigureBySlug, isLive } from "@/lib/marketing/data";
+import { getFigureBySlug, getFeaturedQuestionBySlug, isLive } from "@/lib/marketing/data";
 import { createClient } from "@/lib/supabase/server";
+import type { ChatMessage } from "@/lib/chat/useChatStream";
 
 type Props = {
   params: Promise<{ figureSlug: string }>;
@@ -76,6 +77,37 @@ export default async function ChatPage({ params, searchParams }: Props) {
       ? search.q
       : undefined;
 
+  // ?from=<question-slug> — a follow-up from a Hot Question. Seed the thread with
+  // the original question + this figure's cached answer so the chat continues
+  // that exchange instead of starting cold.
+  const fromSlug =
+    typeof search.from === "string" && search.from.trim().length > 0
+      ? search.from
+      : undefined;
+  let initialMessages: ChatMessage[] | undefined;
+  if (fromSlug) {
+    const fq = await getFeaturedQuestionBySlug(fromSlug);
+    if (fq && fq.responses.length > 0) {
+      const resp =
+        fq.responses.find((r) => r.figureId === figure.id) ?? fq.responses[0];
+      initialMessages = [
+        { role: "user", text: fq.question },
+        {
+          role: "figure",
+          figureName: figure.name,
+          text: resp.answer,
+          confidence: resp.confidence as ChatMessage["confidence"],
+          citations: resp.citations.map((c) => ({
+            title: c.title,
+            url: c.url,
+            year: c.year,
+            snippet: c.snippet ?? "",
+          })),
+        },
+      ];
+    }
+  }
+
   return (
     <div className="flex h-screen bg-bg text-ink">
       <Sidebar
@@ -95,6 +127,7 @@ export default async function ChatPage({ params, searchParams }: Props) {
         isPro={isPro}
         showVoiceToggle={figure.hasHistoricalVoice}
         initialQuestion={initialQuestion}
+        initialMessages={initialMessages}
       />
     </div>
   );

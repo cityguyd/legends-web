@@ -45,6 +45,12 @@ export interface UseChatStreamOptions {
   figureName: string;
   /** voice_mode forwarded to engine; defaults to "modern" */
   voiceMode?: string;
+  /**
+   * Messages to seed the thread with — e.g. the original Hot Question + the
+   * figure's cached answer, so a follow-up continues that exchange instead of
+   * opening a blank chat. Shown read-only above the live turns.
+   */
+  initialMessages?: ChatMessage[];
 }
 
 export interface UseChatStreamResult {
@@ -91,8 +97,9 @@ export function useChatStream({
   figureSlug,
   figureName,
   voiceMode = "modern",
+  initialMessages,
 }: UseChatStreamOptions): UseChatStreamResult {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>(initialMessages ?? []);
   const [status, setStatus] = useState<ChatStatus>("idle");
   const [remaining, setRemaining] = useState<number | null>(null);
   const [limit, setLimit] = useState<number | null>(null);

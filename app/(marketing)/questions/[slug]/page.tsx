@@ -42,9 +42,11 @@ export async function generateMetadata({ params }: Params) {
 function ResponseBlock({
   response,
   figure,
+  questionSlug,
 }: {
   response: FeaturedResponse;
   figure: FigureDetail | undefined;
+  questionSlug: string;
 }) {
   const name = figure?.name ?? response.figureName ?? "Unknown figure";
   const portraitUrl = figure
@@ -60,6 +62,7 @@ function ResponseBlock({
         portraitUrl={portraitUrl}
         confidence={response.confidence}
         citationsCount={response.citations.length}
+        questionSlug={questionSlug}
       />
     </article>
   );
@@ -123,6 +126,7 @@ export default async function QuestionAnalysisPage({ params }: Params) {
                 key={response.figureId ?? i}
                 response={response}
                 figure={figureById.get(response.figureId ?? "")}
+                questionSlug={slug}
               />
             ))
           )}

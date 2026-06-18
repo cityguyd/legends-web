@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
-import { useChatStream } from "@/lib/chat/useChatStream";
+import { useChatStream, type ChatMessage } from "@/lib/chat/useChatStream";
 import { Composer } from "./Composer";
 import { ConsultingIndicator } from "./ConsultingIndicator";
 import { FigureHeader, type FigureHeaderFigure, type VoiceMode } from "./FigureHeader";
@@ -29,6 +29,7 @@ export function ChatThread({
   isPro = false,
   showVoiceToggle,
   initialQuestion,
+  initialMessages,
 }: {
   figure: FigureHeaderFigure;
   isSignedIn: boolean;
@@ -37,12 +38,15 @@ export function ChatThread({
   showVoiceToggle: boolean;
   /** From ?q= — prefills the composer, never auto-sends. */
   initialQuestion?: string;
+  /** Seed exchange (e.g. original Hot Question + cached answer) for follow-ups. */
+  initialMessages?: ChatMessage[];
 }) {
   const [voiceMode, setVoiceMode] = useState<VoiceMode>("modern");
   const { messages, status, remaining, limit, send, retry } = useChatStream({
     figureSlug: figure.slug,
     figureName: figure.name,
     voiceMode,
+    initialMessages,
   });
 
   // "Ask this" on a refusal card prefills (never auto-sends) the composer.

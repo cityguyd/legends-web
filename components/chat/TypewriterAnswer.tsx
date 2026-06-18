@@ -12,6 +12,8 @@ interface TypewriterAnswerProps {
   portraitUrl?: string | null;
   confidence?: string;
   citationsCount?: number;
+  /** Featured-question slug — carried into chat so a follow-up keeps context. */
+  questionSlug?: string;
 }
 
 const CHAR_DELAY_MS = 12;
@@ -23,6 +25,7 @@ export function TypewriterAnswer({
   portraitUrl,
   confidence,
   citationsCount,
+  questionSlug,
 }: TypewriterAnswerProps) {
   const [displayed, setDisplayed] = useState("");
   const [done, setDone] = useState(false);
@@ -52,7 +55,10 @@ export function TypewriterAnswer({
     e.preventDefault();
     const q = followUp.trim();
     if (!q) return;
-    router.push(`/chat/${figureSlug}?q=${encodeURIComponent(q)}`);
+    const fromParam = questionSlug
+      ? `&from=${encodeURIComponent(questionSlug)}`
+      : "";
+    router.push(`/chat/${figureSlug}?q=${encodeURIComponent(q)}${fromParam}`);
   }
 
   return (
