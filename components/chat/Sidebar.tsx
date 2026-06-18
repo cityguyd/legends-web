@@ -38,18 +38,20 @@ function PanelContent({
           ) : (
             <ul className="flex flex-col gap-1 overflow-y-auto">
               {conversations.map((conversation) => (
-                <li
-                  key={conversation.id}
-                  className="rounded-lg px-3 py-2"
-                >
-                  <p className="truncate text-sm font-medium text-ink">
-                    {conversation.title}
-                  </p>
-                  {conversation.createdAt && (
-                    <p className="mt-0.5 text-xs text-sub">
-                      {new Date(conversation.createdAt).toLocaleDateString()}
+                <li key={conversation.id} className="rounded-lg hover:bg-card">
+                  <Link
+                    href={`/conversations/${conversation.id}`}
+                    className="block px-3 py-2"
+                  >
+                    <p className="truncate text-sm font-medium text-ink">
+                      {conversation.title}
                     </p>
-                  )}
+                    {conversation.createdAt && (
+                      <p className="mt-0.5 text-xs text-sub">
+                        {new Date(conversation.createdAt).toLocaleDateString()}
+                      </p>
+                    )}
+                  </Link>
                 </li>
               ))}
             </ul>
