@@ -47,6 +47,8 @@ export interface ChatMessage {
   tier3Sources?: string[];
   /** Present on `refused` answers — drives the premium refusal card (WS3). */
   refusalContext?: RefusalContext;
+  /** Set when the engine capped the answer at max_tokens — drives the Continue affordance. */
+  truncated?: boolean;
 }
 
 export type ChatStatus =
@@ -73,6 +75,7 @@ export interface StreamAccumulator {
   tier3Sources: string[];
   refusalContext: RefusalContext | null;
   readyToReveal: boolean;
+  truncated: boolean;
 }
 
 export function makeChatState(): StreamAccumulator {
@@ -86,6 +89,7 @@ export function makeChatState(): StreamAccumulator {
     tier3Sources: [],
     refusalContext: null,
     readyToReveal: false,
+    truncated: false,
   };
 }
 
@@ -118,7 +122,7 @@ export function applyEvent(
     }
 
     case "done":
-      return { ...state, readyToReveal: true };
+      return { ...state, readyToReveal: true, truncated: d["truncated"] === true };
 
     case "context_chip": {
       const label = d["label"];
