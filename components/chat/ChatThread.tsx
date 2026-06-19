@@ -44,7 +44,7 @@ export function ChatThread({
   conversationId?: string;
 }) {
   const [voiceMode, setVoiceMode] = useState<VoiceMode>("modern");
-  const { messages, status, remaining, limit, send, retry } = useChatStream({
+  const { messages, status, remaining, limit, send, retry, continueAnswer } = useChatStream({
     figureSlug: figure.slug,
     figureName: figure.name,
     voiceMode,
@@ -172,6 +172,8 @@ export function ChatThread({
                       ? messages[index - 1].text
                       : undefined
                   }
+                  onContinue={continueAnswer}
+                  continueDisabled={busy}
                 />
               )
             )}

@@ -26,6 +26,8 @@ export interface ResponseCardMessage {
   tier3Warning?: string;
   tier3Sources?: string[];
   refusalContext?: RefusalContext;
+  /** Set when the engine hit max_tokens — drives the Continue affordance. */
+  truncated?: boolean;
 }
 
 export function ResponseCard({
@@ -36,6 +38,8 @@ export function ResponseCard({
   onAskAdjacent,
   figureSlug,
   question,
+  onContinue,
+  continueDisabled,
 }: {
   message: ResponseCardMessage;
   tier?: CopyTier;
@@ -48,6 +52,10 @@ export function ResponseCard({
   /** Figure slug + originating question, for the "source we missed" form. */
   figureSlug?: string;
   question?: string;
+  /** Called when the user wants to continue a truncated answer. */
+  onContinue?: () => void;
+  /** Disables the Continue button while a stream is in flight. */
+  continueDisabled?: boolean;
 }) {
   const isRefused = message.confidence === "refused";
   const handleCopy = useCallback(
@@ -149,6 +157,16 @@ export function ResponseCard({
             confidence={message.confidence}
             citations={message.citations}
           />
+          {message.truncated && onContinue && (
+            <button
+              type="button"
+              onClick={onContinue}
+              disabled={continueDisabled}
+              className="mt-3 rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-ink hover:bg-bubble disabled:opacity-50"
+            >
+              Continue
+            </button>
+          )}
         </>
       )}
     </article>
