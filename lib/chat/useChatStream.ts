@@ -73,6 +73,8 @@ export interface UseChatStreamResult {
   send: (question: string) => void;
   retry: () => void;
   continueAnswer: () => void;
+  regenerate: () => void;
+  editLast: (newText: string) => void;
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -428,6 +430,36 @@ export function useChatStream({
     send(CONTINUE_PROMPT);
   }, [send]);
 
+  // ── Regenerate / edit-and-resend ──────────────────────────────────────────
+
+  const resendFrom = useCallback(
+    (question: string) => {
+      if (streaming.current) return;
+      // Drop trailing messages back to (and including) the last user turn.
+      const prev = messagesRef.current;
+      let cut = prev.length;
+      for (let i = prev.length - 1; i >= 0; i--) {
+        if (prev[i].role === "user") { cut = i; break; }
+      }
+      const trimmed = prev.slice(0, cut);
+      messagesRef.current = trimmed;   // sync mirror so send() snapshots correct history
+      setMessages(trimmed);
+      send(question);
+    },
+    [send]
+  );
+
+  const regenerate = useCallback(() => {
+    const prev = messagesRef.current;
+    const lastUser = [...prev].reverse().find((m) => m.role === "user");
+    if (lastUser) resendFrom(lastUser.text);
+  }, [resendFrom]);
+
+  const editLast = useCallback((newText: string) => {
+    if (newText.trim().length === 0) return;
+    resendFrom(newText.trim());
+  }, [resendFrom]);
+
   // ── Derived convenience fields ────────────────────────────────────────────
 
   const limitDetail =
@@ -435,5 +467,5 @@ export function useChatStream({
       ? status.detail
       : null;
 
-  return { messages, status, remaining, limit, limitDetail, send, retry, continueAnswer };
+  return { messages, status, remaining, limit, limitDetail, send, retry, continueAnswer, regenerate, editLast };
 }
