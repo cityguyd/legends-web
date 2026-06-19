@@ -392,6 +392,37 @@ describe("useChatStream", () => {
   expect(body.question).toBe("Second question?");
 });
 
+  test("(k) truncated done → message.truncated true; continueAnswer re-requests with partial answer", async () => {
+    const truncatedSSE =
+      `data: {"type":"chunk","text":"Half an answer"}\n\n` +
+      `data: {"type":"confidence","tier":"strong"}\n\n` +
+      `data: {"type":"done","truncated":true,"input_tokens":5,"output_tokens":1024}\n\n`;
+    const fetchSpy = vi.fn()
+      .mockResolvedValueOnce(sseResponse(truncatedSSE))
+      .mockResolvedValueOnce(new Response(JSON.stringify(
+        { questions_used: 1, questions_limit: 10 }), { status: 200 }))
+      .mockResolvedValueOnce(sseResponse(successSSE("The rest of it.")))
+      .mockResolvedValueOnce(new Response(JSON.stringify(
+        { questions_used: 2, questions_limit: 10 }), { status: 200 }));
+    vi.stubGlobal("fetch", fetchSpy);
+
+    const { result } = renderHook(() => useChatStream(DEFAULT_OPTS));
+    await act(async () => { result.current.send("Tell me everything."); });
+    await vi.waitFor(() => expect(result.current.status).toBe("complete"), { timeout: 3000 });
+
+    const figureMsg = result.current.messages[1];
+    expect(figureMsg.role).toBe("figure");
+    expect(figureMsg.truncated).toBe(true);
+
+    await act(async () => { result.current.continueAnswer(); });
+    await vi.waitFor(() => expect(result.current.status).toBe("complete"), { timeout: 3000 });
+
+    // 3rd fetch (index 2) is the continuation POST; its history includes the partial answer.
+    const body = JSON.parse(fetchSpy.mock.calls[2][1].body as string);
+    const lastTurn = body.history[body.history.length - 1];
+    expect(lastTurn).toEqual({ role: "assistant", content: "Half an answer" });
+  });
+
   test("(f) retry() after success is a no-op (fetch not called again)", async () => {
     const fetchSpy = vi
       .fn()

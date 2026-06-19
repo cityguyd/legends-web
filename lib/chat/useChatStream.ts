@@ -72,6 +72,7 @@ export interface UseChatStreamResult {
   limitDetail: string | null;
   send: (question: string) => void;
   retry: () => void;
+  continueAnswer: () => void;
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -79,6 +80,7 @@ export interface UseChatStreamResult {
 const CHARS_PER_FRAME = 40;
 const MAX_HISTORY_TURNS = 8; // last N committed messages sent as context
 const ENGINE_URL = process.env.NEXT_PUBLIC_ENGINE_URL ?? "";
+const CONTINUE_PROMPT = "Please continue your previous answer from exactly where it stopped.";
 
 /** Returns a stable browser-tab session id, or a short random token on SSR. */
 function getSessionId(): string {
@@ -208,6 +210,7 @@ export function useChatStream({
                 tier3Warning: acc.tier3Warning ?? undefined,
                 tier3Sources: acc.tier3Sources.length > 0 ? acc.tier3Sources : undefined,
                 refusalContext: acc.refusalContext ?? undefined,
+                truncated: acc.truncated || undefined,
               };
             }
             return updated;
@@ -419,6 +422,12 @@ export function useChatStream({
     void send(q);
   }, [send, status]);
 
+  // ── Continue truncated answer ──────────────────────────────────────────────
+
+  const continueAnswer = useCallback(() => {
+    send(CONTINUE_PROMPT);
+  }, [send]);
+
   // ── Derived convenience fields ────────────────────────────────────────────
 
   const limitDetail =
@@ -426,5 +435,5 @@ export function useChatStream({
       ? status.detail
       : null;
 
-  return { messages, status, remaining, limit, limitDetail, send, retry };
+  return { messages, status, remaining, limit, limitDetail, send, retry, continueAnswer };
 }
