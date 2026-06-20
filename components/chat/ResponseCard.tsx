@@ -40,6 +40,8 @@ export function ResponseCard({
   question,
   onContinue,
   continueDisabled,
+  onRegenerate,
+  regenerateDisabled,
 }: {
   message: ResponseCardMessage;
   tier?: CopyTier;
@@ -56,6 +58,10 @@ export function ResponseCard({
   onContinue?: () => void;
   /** Disables the Continue button while a stream is in flight. */
   continueDisabled?: boolean;
+  /** Called when the user wants to regenerate this answer. Only wired on the last figure message. */
+  onRegenerate?: () => void;
+  /** Disables the Regenerate button while a stream is in flight. */
+  regenerateDisabled?: boolean;
 }) {
   const isRefused = message.confidence === "refused";
   const handleCopy = useCallback(
@@ -165,6 +171,16 @@ export function ResponseCard({
               className="mt-3 rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-ink hover:bg-bubble disabled:opacity-50"
             >
               Continue
+            </button>
+          )}
+          {onRegenerate && (
+            <button
+              type="button"
+              onClick={onRegenerate}
+              disabled={regenerateDisabled}
+              className="mt-3 ml-2 rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-sub hover:bg-bubble disabled:opacity-50"
+            >
+              Regenerate
             </button>
           )}
         </>
