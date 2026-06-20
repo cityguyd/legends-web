@@ -79,6 +79,11 @@ afterEach(() => {
   global.requestAnimationFrame = originalRAF;
   global.cancelAnimationFrame = originalCAF;
   vi.restoreAllMocks();
+  // Clear sessionStorage to prevent anon-thread cross-test pollution.
+  // The persist effect writes ll_anon_thread_<slug> after each completed send();
+  // without this cleanup, a prior test's committed messages would be rehydrated
+  // by the next test's hook mount, breaking length assertions.
+  sessionStorage.clear();
 });
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
@@ -391,6 +396,157 @@ describe("useChatStream", () => {
   ]);
   expect(body.question).toBe("Second question?");
 });
+
+  test("(k) truncated done → message.truncated true; continueAnswer re-requests with partial answer", async () => {
+    const truncatedSSE =
+      `data: {"type":"chunk","text":"Half an answer"}\n\n` +
+      `data: {"type":"confidence","tier":"strong"}\n\n` +
+      `data: {"type":"done","truncated":true,"input_tokens":5,"output_tokens":1024}\n\n`;
+    const fetchSpy = vi.fn()
+      .mockResolvedValueOnce(sseResponse(truncatedSSE))
+      .mockResolvedValueOnce(new Response(JSON.stringify(
+        { questions_used: 1, questions_limit: 10 }), { status: 200 }))
+      .mockResolvedValueOnce(sseResponse(successSSE("The rest of it.")))
+      .mockResolvedValueOnce(new Response(JSON.stringify(
+        { questions_used: 2, questions_limit: 10 }), { status: 200 }));
+    vi.stubGlobal("fetch", fetchSpy);
+
+    const { result } = renderHook(() => useChatStream(DEFAULT_OPTS));
+    await act(async () => { result.current.send("Tell me everything."); });
+    await vi.waitFor(() => expect(result.current.status).toBe("complete"), { timeout: 3000 });
+
+    const figureMsg = result.current.messages[1];
+    expect(figureMsg.role).toBe("figure");
+    expect(figureMsg.truncated).toBe(true);
+
+    await act(async () => { result.current.continueAnswer(); });
+    await vi.waitFor(() => expect(result.current.status).toBe("complete"), { timeout: 3000 });
+
+    // 3rd fetch (index 2) is the continuation POST; its history includes the partial answer.
+    const body = JSON.parse(fetchSpy.mock.calls[2][1].body as string);
+    const lastTurn = body.history[body.history.length - 1];
+    expect(lastTurn).toEqual({ role: "assistant", content: "Half an answer" });
+  });
+
+  async function completeOneExchange(result: { current: ReturnType<typeof useChatStream> }, fetchSpy: ReturnType<typeof vi.fn>, q = "First?", _a = "First answer.") {
+    await act(async () => { result.current.send(q); });
+    await vi.waitFor(() => expect(result.current.status).toBe("complete"), { timeout: 3000 });
+  }
+
+  test("(l) regenerate re-sends the last question and replaces the last answer", async () => {
+    const fetchSpy = vi.fn()
+      .mockResolvedValueOnce(sseResponse(successSSE("First answer.")))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ questions_used: 1, questions_limit: 10 }), { status: 200 }))
+      .mockResolvedValueOnce(sseResponse(successSSE("Regenerated answer.")))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ questions_used: 2, questions_limit: 10 }), { status: 200 }));
+    vi.stubGlobal("fetch", fetchSpy);
+    const { result } = renderHook(() => useChatStream(DEFAULT_OPTS));
+    await completeOneExchange(result, fetchSpy);
+
+    await act(async () => { result.current.regenerate(); });
+    await vi.waitFor(() => expect(result.current.status).toBe("complete"), { timeout: 3000 });
+
+    const msgs = result.current.messages;
+    expect(msgs).toHaveLength(2);                       // not duplicated
+    expect(msgs[0]).toMatchObject({ role: "user", text: "First?" });
+    expect(msgs[1].text).toBe("Regenerated answer.");
+    // regeneration POST (index 2) carries empty history (the turn was dropped first)
+    const body = JSON.parse(fetchSpy.mock.calls[2][1].body as string);
+    expect(body.history).toEqual([]);
+    expect(body.question).toBe("First?");
+  });
+
+  test("(m) editLast resends edited text, replacing the prior turn", async () => {
+    const fetchSpy = vi.fn()
+      .mockResolvedValueOnce(sseResponse(successSSE("First answer.")))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ questions_used: 1, questions_limit: 10 }), { status: 200 }))
+      .mockResolvedValueOnce(sseResponse(successSSE("Edited answer.")))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ questions_used: 2, questions_limit: 10 }), { status: 200 }));
+    vi.stubGlobal("fetch", fetchSpy);
+    const { result } = renderHook(() => useChatStream(DEFAULT_OPTS));
+    await completeOneExchange(result, fetchSpy);
+
+    await act(async () => { result.current.editLast("A better question?"); });
+    await vi.waitFor(() => expect(result.current.status).toBe("complete"), { timeout: 3000 });
+
+    const msgs = result.current.messages;
+    expect(msgs).toHaveLength(2);
+    expect(msgs[0]).toMatchObject({ role: "user", text: "A better question?" });
+    expect(msgs[1].text).toBe("Edited answer.");
+  });
+
+  test("(n) anon thread is rehydrated from sessionStorage on mount", async () => {
+    const saved = [
+      { role: "user", text: "Earlier question?" },
+      { role: "figure", figureName: "Martin Luther King Jr.", text: "Earlier answer." },
+    ];
+    sessionStorage.setItem("ll_anon_thread_mlk", JSON.stringify(saved));
+    const { result } = renderHook(() => useChatStream(DEFAULT_OPTS));
+    expect(result.current.messages).toHaveLength(2);
+    expect(result.current.messages[0]).toMatchObject({ role: "user", text: "Earlier question?" });
+    sessionStorage.removeItem("ll_anon_thread_mlk");
+  });
+
+  test("(o) completing a turn persists the anon thread to sessionStorage", async () => {
+    sessionStorage.removeItem("ll_anon_thread_mlk");
+    vi.stubGlobal("fetch", vi.fn()
+      .mockResolvedValueOnce(sseResponse(successSSE("An answer.")))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ questions_used: 1, questions_limit: 10 }), { status: 200 })));
+    const { result } = renderHook(() => useChatStream(DEFAULT_OPTS));
+    await act(async () => { result.current.send("A question?"); });
+    await vi.waitFor(() => expect(result.current.status).toBe("complete"), { timeout: 3000 });
+
+    const stored = JSON.parse(sessionStorage.getItem("ll_anon_thread_mlk") || "[]");
+    expect(stored).toHaveLength(2);
+    expect(stored[0]).toMatchObject({ role: "user", text: "A question?" });
+    expect(stored[1]).toMatchObject({ role: "figure", text: "An answer." });
+    sessionStorage.removeItem("ll_anon_thread_mlk");
+  });
+
+  test("(p) signed-in (conversationId) chats do NOT use anon sessionStorage", async () => {
+    sessionStorage.removeItem("ll_anon_thread_mlk");
+    vi.stubGlobal("fetch", vi.fn()
+      .mockResolvedValueOnce(sseResponse(successSSE("Saved answer.")))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ questions_used: 1, questions_limit: 10 }), { status: 200 })));
+    const { result } = renderHook(() => useChatStream({ ...DEFAULT_OPTS, conversationId: "conv-1" }));
+    await act(async () => { result.current.send("Q?"); });
+    await vi.waitFor(() => expect(result.current.status).toBe("complete"), { timeout: 3000 });
+    expect(sessionStorage.getItem("ll_anon_thread_mlk")).toBeNull();
+  });
+
+  test("(q) regenerate after two exchanges keeps the first exchange in history", async () => {
+    const fetchSpy = vi.fn()
+      .mockResolvedValueOnce(sseResponse(successSSE("Answer one.")))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ questions_used: 1, questions_limit: 10 }), { status: 200 }))
+      .mockResolvedValueOnce(sseResponse(successSSE("Answer two.")))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ questions_used: 2, questions_limit: 10 }), { status: 200 }))
+      .mockResolvedValueOnce(sseResponse(successSSE("Answer two regenerated.")))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ questions_used: 3, questions_limit: 10 }), { status: 200 }));
+    vi.stubGlobal("fetch", fetchSpy);
+    const { result } = renderHook(() => useChatStream(DEFAULT_OPTS));
+
+    await act(async () => { result.current.send("First?"); });
+    await vi.waitFor(() => expect(result.current.status).toBe("complete"), { timeout: 3000 });
+    await act(async () => { result.current.send("Second?"); });
+    await vi.waitFor(() => expect(result.current.status).toBe("complete"), { timeout: 3000 });
+
+    await act(async () => { result.current.regenerate(); });
+    await vi.waitFor(() => expect(result.current.status).toBe("complete"), { timeout: 3000 });
+
+    const msgs = result.current.messages;
+    expect(msgs).toHaveLength(4); // first user+figure retained, second pair regenerated
+    expect(msgs[0]).toMatchObject({ role: "user", text: "First?" });
+    expect(msgs[1]).toMatchObject({ role: "figure", text: "Answer one." });
+    expect(msgs[2]).toMatchObject({ role: "user", text: "Second?" });
+    expect(msgs[3].text).toBe("Answer two regenerated.");
+    // the regeneration POST (6th fetch call, index 4) carries ONLY the first exchange as history
+    const body = JSON.parse(fetchSpy.mock.calls[4][1].body as string);
+    expect(body.history).toEqual([
+      { role: "user", content: "First?" },
+      { role: "assistant", content: "Answer one." },
+    ]);
+    expect(body.question).toBe("Second?");
+  });
 
   test("(f) retry() after success is a no-op (fetch not called again)", async () => {
     const fetchSpy = vi

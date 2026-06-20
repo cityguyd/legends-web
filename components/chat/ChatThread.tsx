@@ -44,13 +44,17 @@ export function ChatThread({
   conversationId?: string;
 }) {
   const [voiceMode, setVoiceMode] = useState<VoiceMode>("modern");
-  const { messages, status, remaining, limit, send, retry } = useChatStream({
+  const { messages, status, remaining, limit, send, retry, continueAnswer, regenerate, editLast } = useChatStream({
     figureSlug: figure.slug,
     figureName: figure.name,
     voiceMode,
     initialMessages,
     conversationId,
   });
+
+  // Edit affordance state for the last user message.
+  const [editingLastUser, setEditingLastUser] = useState(false);
+  const [editValue, setEditValue] = useState("");
 
   // "Ask this" on a refusal card prefills (never auto-sends) the composer.
   const [prefill, setPrefill] = useState<{ value: string; nonce: number } | null>(
@@ -150,31 +154,89 @@ export function ChatThread({
               </p>
             )}
 
-            {messages.map((message, index) =>
-              message.role === "user" ? (
-                <div
-                  key={index}
-                  className="max-w-[80%] self-end rounded-2xl rounded-br-sm bg-bubble px-4 py-2.5 text-sm leading-relaxed text-ink"
-                >
-                  {message.text}
-                </div>
-              ) : (
-                <ResponseCard
-                  key={index}
-                  message={message}
-                  tier={copyTier}
-                  onCopied={() => setToastVisible(true)}
-                  refusalHeading={refusalHeading}
-                  onAskAdjacent={askAdjacent}
-                  figureSlug={figure.slug}
-                  question={
-                    messages[index - 1]?.role === "user"
-                      ? messages[index - 1].text
-                      : undefined
-                  }
-                />
-              )
-            )}
+            {(() => {
+              const lastFigureIndex = messages.map((m) => m.role).lastIndexOf("figure");
+              const lastUserIndex = messages.map((m) => m.role).lastIndexOf("user");
+              return messages.map((message, index) =>
+                message.role === "user" ? (
+                  index === lastUserIndex && editingLastUser ? (
+                    <form
+                      key={index}
+                      className="flex max-w-[80%] self-end gap-2"
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        const trimmed = editValue.trim();
+                        if (trimmed) {
+                          editLast(trimmed);
+                          setEditingLastUser(false);
+                        }
+                      }}
+                    >
+                      <input
+                        autoFocus
+                        value={editValue}
+                        onChange={(e) => setEditValue(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Escape") setEditingLastUser(false);
+                        }}
+                        className="flex-1 rounded-2xl rounded-br-sm border border-border bg-bubble px-4 py-2.5 text-sm leading-relaxed text-ink focus:outline-none focus:ring-1 focus:ring-gold-dark"
+                      />
+                      <button
+                        type="submit"
+                        disabled={!editValue.trim()}
+                        className="shrink-0 rounded-lg border border-border bg-bubble px-3 py-2 text-xs font-medium text-ink hover:bg-surface disabled:opacity-50"
+                      >
+                        Send
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setEditingLastUser(false)}
+                        className="shrink-0 rounded-lg border border-border px-3 py-2 text-xs font-medium text-sub hover:bg-surface"
+                      >
+                        Cancel
+                      </button>
+                    </form>
+                  ) : (
+                    <div key={index} className="group flex max-w-[80%] flex-col items-end self-end">
+                      <div className="rounded-2xl rounded-br-sm bg-bubble px-4 py-2.5 text-sm leading-relaxed text-ink">
+                        {message.text}
+                      </div>
+                      {index === lastUserIndex && !busy && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditValue(message.text);
+                            setEditingLastUser(true);
+                          }}
+                          className="mt-1 text-xs text-sub opacity-0 transition-opacity group-hover:opacity-100 hover:text-gold-dark"
+                        >
+                          Edit
+                        </button>
+                      )}
+                    </div>
+                  )
+                ) : (
+                  <ResponseCard
+                    key={index}
+                    message={message}
+                    tier={copyTier}
+                    onCopied={() => setToastVisible(true)}
+                    refusalHeading={refusalHeading}
+                    onAskAdjacent={askAdjacent}
+                    figureSlug={figure.slug}
+                    question={
+                      messages[index - 1]?.role === "user"
+                        ? messages[index - 1].text
+                        : undefined
+                    }
+                    onContinue={continueAnswer}
+                    continueDisabled={busy}
+                    onRegenerate={index === lastFigureIndex ? regenerate : undefined}
+                    regenerateDisabled={busy}
+                  />
+                )
+              );
+            })()}
 
             {/* Save affordance — signed-in users with a settled thread */}
             {isSignedIn && messages.length > 0 && !busy && (

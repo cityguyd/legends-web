@@ -72,6 +72,9 @@ export interface UseChatStreamResult {
   limitDetail: string | null;
   send: (question: string) => void;
   retry: () => void;
+  continueAnswer: () => void;
+  regenerate: () => void;
+  editLast: (newText: string) => void;
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -79,6 +82,7 @@ export interface UseChatStreamResult {
 const CHARS_PER_FRAME = 40;
 const MAX_HISTORY_TURNS = 8; // last N committed messages sent as context
 const ENGINE_URL = process.env.NEXT_PUBLIC_ENGINE_URL ?? "";
+const CONTINUE_PROMPT = "Please continue your previous answer from exactly where it stopped.";
 
 /** Returns a stable browser-tab session id, or a short random token on SSR. */
 function getSessionId(): string {
@@ -94,6 +98,28 @@ function getSessionId(): string {
   return id;
 }
 
+/** sessionStorage key for the anonymous thread for a given figure. */
+function anonKey(figureSlug: string): string {
+  return `ll_anon_thread_${figureSlug}`;
+}
+
+/**
+ * Read the persisted anonymous thread for a figure from sessionStorage.
+ * SSR-safe (returns null when window is unavailable). Silently returns null
+ * on any parse error or if the stored value is not an array.
+ */
+function readAnonThread(figureSlug: string): ChatMessage[] | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = sessionStorage.getItem(anonKey(figureSlug));
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? (parsed as ChatMessage[]) : null;
+  } catch {
+    return null;
+  }
+}
+
 // ── Hook ─────────────────────────────────────────────────────────────────────
 
 export function useChatStream({
@@ -103,12 +129,30 @@ export function useChatStream({
   initialMessages,
   conversationId,
 }: UseChatStreamOptions): UseChatStreamResult {
-  const [messages, setMessages] = useState<ChatMessage[]>(initialMessages ?? []);
+  // Seed from initialMessages, or (for anon chats) from the persisted sessionStorage
+  // thread, or fall back to empty. conversationId chats always start empty (server holds state).
+  const seededMessages =
+    initialMessages ?? (conversationId ? [] : readAnonThread(figureSlug)) ?? [];
+  const [messages, setMessages] = useState<ChatMessage[]>(seededMessages);
   // Mirror of `messages` for synchronous reads inside send() (state is async).
-  const messagesRef = useRef<ChatMessage[]>(initialMessages ?? []);
+  const messagesRef = useRef<ChatMessage[]>(seededMessages);
   useEffect(() => {
     messagesRef.current = messages;
   }, [messages]);
+
+  // Persist anonymous threads so a reload keeps the conversation (no server store).
+  useEffect(() => {
+    if (conversationId || typeof window === "undefined") return;
+    try {
+      if (messages.length === 0) {
+        sessionStorage.removeItem(anonKey(figureSlug));
+      } else {
+        sessionStorage.setItem(anonKey(figureSlug), JSON.stringify(messages));
+      }
+    } catch {
+      /* sessionStorage may be unavailable (private mode / quota) — best-effort */
+    }
+  }, [messages, conversationId, figureSlug]);
   const [status, setStatus] = useState<ChatStatus>("idle");
   const [remaining, setRemaining] = useState<number | null>(null);
   const [limit, setLimit] = useState<number | null>(null);
@@ -208,6 +252,7 @@ export function useChatStream({
                 tier3Warning: acc.tier3Warning ?? undefined,
                 tier3Sources: acc.tier3Sources.length > 0 ? acc.tier3Sources : undefined,
                 refusalContext: acc.refusalContext ?? undefined,
+                truncated: acc.truncated || undefined,
               };
             }
             return updated;
@@ -419,6 +464,43 @@ export function useChatStream({
     void send(q);
   }, [send, status]);
 
+  // ── Continue truncated answer ──────────────────────────────────────────────
+
+  const continueAnswer = useCallback(() => {
+    send(CONTINUE_PROMPT);
+  }, [send]);
+
+  // ── Regenerate / edit-and-resend ──────────────────────────────────────────
+
+  const resendFrom = useCallback(
+    (question: string) => {
+      if (streaming.current) return;
+      // Drop trailing messages back to (and including) the last user turn.
+      const prev = messagesRef.current;
+      let cut = prev.length;
+      for (let i = prev.length - 1; i >= 0; i--) {
+        if (prev[i].role === "user") { cut = i; break; }
+      }
+      if (cut === prev.length) return; // no prior user turn to replace; nothing to resend
+      const trimmed = prev.slice(0, cut);
+      messagesRef.current = trimmed;   // sync mirror so send() snapshots correct history
+      setMessages(trimmed);
+      send(question);
+    },
+    [send]
+  );
+
+  const regenerate = useCallback(() => {
+    const prev = messagesRef.current;
+    const lastUser = [...prev].reverse().find((m) => m.role === "user");
+    if (lastUser) resendFrom(lastUser.text);
+  }, [resendFrom]);
+
+  const editLast = useCallback((newText: string) => {
+    if (newText.trim().length === 0) return;
+    resendFrom(newText.trim());
+  }, [resendFrom]);
+
   // ── Derived convenience fields ────────────────────────────────────────────
 
   const limitDetail =
@@ -426,5 +508,5 @@ export function useChatStream({
       ? status.detail
       : null;
 
-  return { messages, status, remaining, limit, limitDetail, send, retry };
+  return { messages, status, remaining, limit, limitDetail, send, retry, continueAnswer, regenerate, editLast };
 }
