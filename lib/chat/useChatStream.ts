@@ -98,6 +98,28 @@ function getSessionId(): string {
   return id;
 }
 
+/** sessionStorage key for the anonymous thread for a given figure. */
+function anonKey(figureSlug: string): string {
+  return `ll_anon_thread_${figureSlug}`;
+}
+
+/**
+ * Read the persisted anonymous thread for a figure from sessionStorage.
+ * SSR-safe (returns null when window is unavailable). Silently returns null
+ * on any parse error or if the stored value is not an array.
+ */
+function readAnonThread(figureSlug: string): ChatMessage[] | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = sessionStorage.getItem(anonKey(figureSlug));
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? (parsed as ChatMessage[]) : null;
+  } catch {
+    return null;
+  }
+}
+
 // ── Hook ─────────────────────────────────────────────────────────────────────
 
 export function useChatStream({
@@ -107,12 +129,30 @@ export function useChatStream({
   initialMessages,
   conversationId,
 }: UseChatStreamOptions): UseChatStreamResult {
-  const [messages, setMessages] = useState<ChatMessage[]>(initialMessages ?? []);
+  // Seed from initialMessages, or (for anon chats) from the persisted sessionStorage
+  // thread, or fall back to empty. conversationId chats always start empty (server holds state).
+  const seededMessages =
+    initialMessages ?? (conversationId ? [] : readAnonThread(figureSlug)) ?? [];
+  const [messages, setMessages] = useState<ChatMessage[]>(seededMessages);
   // Mirror of `messages` for synchronous reads inside send() (state is async).
-  const messagesRef = useRef<ChatMessage[]>(initialMessages ?? []);
+  const messagesRef = useRef<ChatMessage[]>(seededMessages);
   useEffect(() => {
     messagesRef.current = messages;
   }, [messages]);
+
+  // Persist anonymous threads so a reload keeps the conversation (no server store).
+  useEffect(() => {
+    if (conversationId || typeof window === "undefined") return;
+    try {
+      if (messages.length === 0) {
+        sessionStorage.removeItem(anonKey(figureSlug));
+      } else {
+        sessionStorage.setItem(anonKey(figureSlug), JSON.stringify(messages));
+      }
+    } catch {
+      /* sessionStorage may be unavailable (private mode / quota) — best-effort */
+    }
+  }, [messages, conversationId, figureSlug]);
   const [status, setStatus] = useState<ChatStatus>("idle");
   const [remaining, setRemaining] = useState<number | null>(null);
   const [limit, setLimit] = useState<number | null>(null);

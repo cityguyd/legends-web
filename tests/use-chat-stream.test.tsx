@@ -79,6 +79,11 @@ afterEach(() => {
   global.requestAnimationFrame = originalRAF;
   global.cancelAnimationFrame = originalCAF;
   vi.restoreAllMocks();
+  // Clear sessionStorage to prevent anon-thread cross-test pollution.
+  // The persist effect writes ll_anon_thread_<slug> after each completed send();
+  // without this cleanup, a prior test's committed messages would be rehydrated
+  // by the next test's hook mount, breaking length assertions.
+  sessionStorage.clear();
 });
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
@@ -468,6 +473,45 @@ describe("useChatStream", () => {
     expect(msgs).toHaveLength(2);
     expect(msgs[0]).toMatchObject({ role: "user", text: "A better question?" });
     expect(msgs[1].text).toBe("Edited answer.");
+  });
+
+  test("(n) anon thread is rehydrated from sessionStorage on mount", async () => {
+    const saved = [
+      { role: "user", text: "Earlier question?" },
+      { role: "figure", figureName: "Martin Luther King Jr.", text: "Earlier answer." },
+    ];
+    sessionStorage.setItem("ll_anon_thread_mlk", JSON.stringify(saved));
+    const { result } = renderHook(() => useChatStream(DEFAULT_OPTS));
+    expect(result.current.messages).toHaveLength(2);
+    expect(result.current.messages[0]).toMatchObject({ role: "user", text: "Earlier question?" });
+    sessionStorage.removeItem("ll_anon_thread_mlk");
+  });
+
+  test("(o) completing a turn persists the anon thread to sessionStorage", async () => {
+    sessionStorage.removeItem("ll_anon_thread_mlk");
+    vi.stubGlobal("fetch", vi.fn()
+      .mockResolvedValueOnce(sseResponse(successSSE("An answer.")))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ questions_used: 1, questions_limit: 10 }), { status: 200 })));
+    const { result } = renderHook(() => useChatStream(DEFAULT_OPTS));
+    await act(async () => { result.current.send("A question?"); });
+    await vi.waitFor(() => expect(result.current.status).toBe("complete"), { timeout: 3000 });
+
+    const stored = JSON.parse(sessionStorage.getItem("ll_anon_thread_mlk") || "[]");
+    expect(stored).toHaveLength(2);
+    expect(stored[0]).toMatchObject({ role: "user", text: "A question?" });
+    expect(stored[1]).toMatchObject({ role: "figure", text: "An answer." });
+    sessionStorage.removeItem("ll_anon_thread_mlk");
+  });
+
+  test("(p) signed-in (conversationId) chats do NOT use anon sessionStorage", async () => {
+    sessionStorage.removeItem("ll_anon_thread_mlk");
+    vi.stubGlobal("fetch", vi.fn()
+      .mockResolvedValueOnce(sseResponse(successSSE("Saved answer.")))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ questions_used: 1, questions_limit: 10 }), { status: 200 })));
+    const { result } = renderHook(() => useChatStream({ ...DEFAULT_OPTS, conversationId: "conv-1" }));
+    await act(async () => { result.current.send("Q?"); });
+    await vi.waitFor(() => expect(result.current.status).toBe("complete"), { timeout: 3000 });
+    expect(sessionStorage.getItem("ll_anon_thread_mlk")).toBeNull();
   });
 
   test("(q) regenerate after two exchanges keeps the first exchange in history", async () => {
