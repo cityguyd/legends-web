@@ -441,6 +441,7 @@ export function useChatStream({
       for (let i = prev.length - 1; i >= 0; i--) {
         if (prev[i].role === "user") { cut = i; break; }
       }
+      if (cut === prev.length) return; // no prior user turn to replace; nothing to resend
       const trimmed = prev.slice(0, cut);
       messagesRef.current = trimmed;   // sync mirror so send() snapshots correct history
       setMessages(trimmed);

@@ -470,6 +470,40 @@ describe("useChatStream", () => {
     expect(msgs[1].text).toBe("Edited answer.");
   });
 
+  test("(q) regenerate after two exchanges keeps the first exchange in history", async () => {
+    const fetchSpy = vi.fn()
+      .mockResolvedValueOnce(sseResponse(successSSE("Answer one.")))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ questions_used: 1, questions_limit: 10 }), { status: 200 }))
+      .mockResolvedValueOnce(sseResponse(successSSE("Answer two.")))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ questions_used: 2, questions_limit: 10 }), { status: 200 }))
+      .mockResolvedValueOnce(sseResponse(successSSE("Answer two regenerated.")))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ questions_used: 3, questions_limit: 10 }), { status: 200 }));
+    vi.stubGlobal("fetch", fetchSpy);
+    const { result } = renderHook(() => useChatStream(DEFAULT_OPTS));
+
+    await act(async () => { result.current.send("First?"); });
+    await vi.waitFor(() => expect(result.current.status).toBe("complete"), { timeout: 3000 });
+    await act(async () => { result.current.send("Second?"); });
+    await vi.waitFor(() => expect(result.current.status).toBe("complete"), { timeout: 3000 });
+
+    await act(async () => { result.current.regenerate(); });
+    await vi.waitFor(() => expect(result.current.status).toBe("complete"), { timeout: 3000 });
+
+    const msgs = result.current.messages;
+    expect(msgs).toHaveLength(4); // first user+figure retained, second pair regenerated
+    expect(msgs[0]).toMatchObject({ role: "user", text: "First?" });
+    expect(msgs[1]).toMatchObject({ role: "figure", text: "Answer one." });
+    expect(msgs[2]).toMatchObject({ role: "user", text: "Second?" });
+    expect(msgs[3].text).toBe("Answer two regenerated.");
+    // the regeneration POST (6th fetch call, index 4) carries ONLY the first exchange as history
+    const body = JSON.parse(fetchSpy.mock.calls[4][1].body as string);
+    expect(body.history).toEqual([
+      { role: "user", content: "First?" },
+      { role: "assistant", content: "Answer one." },
+    ]);
+    expect(body.question).toBe("Second?");
+  });
+
   test("(f) retry() after success is a no-op (fetch not called again)", async () => {
     const fetchSpy = vi
       .fn()
